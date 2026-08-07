@@ -497,7 +497,7 @@ td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim);
 
 <script type="module">
 import { initializeApp } from "firebase/app";
-import { initializeFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   projectId: "dogwood-provider-lcf5x",
@@ -507,7 +507,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-window.db = initializeFirestore(app, { experimentalForceLongPolling: true }, "ai-studio-7cc38071-589f-44ad-ae71-6b6190adf747");
+window.db = getFirestore(app, "ai-studio-7cc38071-589f-44ad-ae71-6b6190adf747");
 window.doc = doc;
 window.getDoc = getDoc;
 window.setDoc = setDoc;
@@ -524,8 +524,8 @@ const ADMIN_CODE = 'SCI2569'; // change this passcode as needed
 const ACTIVITIES = [
   {
     id:'rocket', name:'จรวดขวดน้ำ', mode:'team', unit:'ทีม', maxSeats:20,
-    teamMin:2, teamMax:3,
-    period:'ช่วงเช้า (10.30–12.00 น.)',
+    teamMin:3, teamMax:3,
+    period:'08.30-12.00น.',
     icon:'rocket',
     details:['ใช้เวลาแข่งขันประมาณ 3 ชั่วโมง','โรงเรียนจัดเตรียมเครื่องยิงจรวดให้ จำนวน 2 เครื่อง'],
     extraFields:[]
@@ -547,7 +547,7 @@ const ACTIVITIES = [
   {
     id:'quiz', name:'ตอบปัญหาทางวิทยาศาสตร์', mode:'team', unit:'ทีม', maxSeats:20,
     teamMin:3, teamMax:3,
-    period:'จัดล่วงหน้าก่อนวันงาน หรือช่วงเช้า',
+    period:'ช่วงเช้า เวลา 1 ชั่วโมง',
     icon:'quiz',
     details:['รูปแบบข้อสอบปรนัย ระบบกระดาษ','แข่งขันประเภททีม ทีมละ 3 คน'],
     extraFields:[]
@@ -561,7 +561,7 @@ const ACTIVITIES = [
   },
   {
     id:'show', name:'Science Show', mode:'team', unit:'ทีม', maxSeats:10,
-    teamMin:2, teamMax:4,
+    teamMin:3, teamMax:3,
     period:'ช่วงบ่าย',
     icon:'flask',
     details:['นำเสนอได้ 1 การทดลองต่อทีม','จำกัดเวลาการแสดงไม่เกิน 10 นาทีต่อทีม'],
@@ -595,7 +595,7 @@ async function getRegistrants(id){
     }
     return [];
   }catch(e){
-    console.error("Error getting document:", e);
+    console.warn("Error getting document:", e?.message || e);
     return [];
   }
 }
@@ -605,7 +605,7 @@ async function saveRegistrants(id, list){
     await window.setDoc(docRef, { list });
     return true;
   }catch(e){
-    console.error("Error saving document:", e);
+    console.warn("Error saving document:", e?.message || e);
     return false;
   }
 }
