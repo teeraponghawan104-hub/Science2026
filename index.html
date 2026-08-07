@@ -497,7 +497,7 @@ td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim);
 
 <script type="module">
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { initializeFirestore, doc, getDoc, setDoc, onSnapshot, collection } from "firebase/firestore";
 
 const firebaseConfig = {
   projectId: "dogwood-provider-lcf5x",
@@ -507,10 +507,15 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-window.db = getFirestore(app, "ai-studio-7cc38071-589f-44ad-ae71-6b6190adf747");
+window.db = initializeFirestore(app, {
+  experimentalForceLongPolling: true
+}, "ai-studio-7cc38071-589f-44ad-ae71-6b6190adf747");
+
 window.doc = doc;
 window.getDoc = getDoc;
 window.setDoc = setDoc;
+window.onSnapshot = onSnapshot;
+window.collection = collection;
 
 /* =========================================================
    CONFIG — edit these to adjust the event
@@ -523,7 +528,7 @@ const ADMIN_CODE = 'SCI2569'; // change this passcode as needed
 // so reasonable defaults are set below — adjust maxSeats freely.
 const ACTIVITIES = [
   {
-    id:'rocket', name:'จรวดขวดน้ำ', mode:'team', unit:'ทีม', maxSeats:20,
+    id:'rocket', name:'จรวดขวดน้ำ', mode:'team', unit:'ทีม', maxSeats:12,
     teamMin:3, teamMax:3,
     period:'08.30-12.00น.',
     icon:'rocket',
@@ -531,21 +536,21 @@ const ACTIVITIES = [
     extraFields:[]
   },
   {
-    id:'painting', name:'วาดภาพระบายสี', mode:'individual', unit:'คน', maxSeats:60,
+    id:'painting', name:'วาดภาพระบายสี', mode:'individual', unit:'คน', maxSeats:24,
     period:'ช่วงเช้า (ใช้เวลา 3 ชั่วโมง)',
     icon:'palette',
-    details:['ใช้กระดาษ 100 ปอนด์ ขนาด F4 (โรงเรียนจัดเตรียมให้)','ห้ามนำโทรศัพท์มือถือเข้าห้องสอบ และห้ามดูภาพต้นแบบทุกชนิด'],
+    details:['ใช้กระดาษ 100 ปอนด์ ขนาด F4 (โรงเรียนจัดเตรียมให้)','ห้ามนำโทรศัพท์มือถือเข้าห้องสอบ และห้ามดูภาพต้นแบบทุกชนิด','ห้องละไม่เกิน 2 คน'],
     extraFields:[]
   },
   {
-    id:'essay', name:'เขียนเรียงความ', mode:'individual', unit:'คน', maxSeats:60,
+    id:'essay', name:'เขียนเรียงความ', mode:'individual', unit:'คน', maxSeats:24,
     period:'ช่วงเช้า (ใช้เวลา 1 ชั่วโมง)',
     icon:'pencil',
-    details:['โรงเรียนจัดเตรียมกระดาษมีเส้นให้สำหรับผู้เข้าสอบ'],
+    details:['โรงเรียนจัดเตรียมกระดาษมีเส้นให้สำหรับผู้เข้าสอบ','ห้องละไม่เกิน 2 คน'],
     extraFields:[]
   },
   {
-    id:'quiz', name:'ตอบปัญหาทางวิทยาศาสตร์', mode:'team', unit:'ทีม', maxSeats:20,
+    id:'quiz', name:'ตอบปัญหาทางวิทยาศาสตร์', mode:'team', unit:'ทีม', maxSeats:12,
     teamMin:3, teamMax:3,
     period:'ช่วงเช้า เวลา 1 ชั่วโมง',
     icon:'quiz',
@@ -553,15 +558,15 @@ const ACTIVITIES = [
     extraFields:[]
   },
   {
-    id:'recycle', name:'ประกวดชุดรีไซเคิล (Recycle)', mode:'individual', unit:'คน', maxSeats:15,
+    id:'recycle', name:'ประกวดชุดรีไซเคิล (Recycle)', mode:'individual', unit:'คน', maxSeats:12,
     period:'ช่วงบ่าย (เดินแบบบนเวที)',
     icon:'recycle',
     details:['ธีม: นวัตกรรมแห่งโลกอนาคต พร้อมนวัตกรรม 1 อย่าง เช่น หน้ากากไซเบอร์กรองอากาศ, แว่นตาโฮโลแกรม, กล่องควบคุมสภาพอากาศ','ผู้เข้าแข่งขันต้องนำเสนอและอธิบายแนวคิดของชุดที่ประดิษฐ์ได้'],
     extraFields:[{id:'innovation', label:'นวัตกรรมที่นำเสนอในชุด', placeholder:'เช่น หน้ากากกรองอากาศ, แว่นตาโฮโลแกรม', required:true}]
   },
   {
-    id:'show', name:'Science Show', mode:'team', unit:'ทีม', maxSeats:10,
-    teamMin:3, teamMax:3,
+    id:'show', name:'Science Show', mode:'team', unit:'ทีม', maxSeats:12,
+    teamMin:3, teamMax:5,
     period:'ช่วงบ่าย',
     icon:'flask',
     details:['นำเสนอได้ 1 การทดลองต่อทีม','จำกัดเวลาการแสดงไม่เกิน 10 นาทีต่อทีม'],
@@ -661,10 +666,35 @@ function renderActivities(){
 }
 
 async function loadAll(){
-  for(const act of ACTIVITIES){
-    activitiesState[act.id] = await getRegistrants(act.id);
+  try {
+    for(const act of ACTIVITIES){
+      activitiesState[act.id] = await getRegistrants(act.id);
+    }
+    renderActivities();
+  } catch(e) {
+    console.warn("loadAll error:", e);
   }
-  renderActivities();
+}
+
+function initRealtimeListener(){
+  try {
+    window.onSnapshot(window.collection(window.db, "registrations"), (snapshot) => {
+      snapshot.forEach((docSnap) => {
+        if (docSnap.exists()) {
+          activitiesState[docSnap.id] = docSnap.data().list || [];
+        }
+      });
+      renderActivities();
+      const adminModal = document.getElementById('adminModal');
+      if (adminModal && adminModal.classList.contains('show')) {
+        renderAdminPanel();
+      }
+    }, (err) => {
+      console.warn("Realtime listener warning:", err?.message || err);
+    });
+  } catch(e) {
+    console.warn("initRealtimeListener exception:", e);
+  }
 }
 
 /* =========================================================
@@ -752,18 +782,19 @@ function renderRegForm(){
         <div class="error">กรุณาเลือกระดับชั้น</div>
       </div>
 
-      ${!isTeam ? `
       <div class="field" data-field="room">
-        <label for="f_room">ห้อง <span class="req">*</span></label>
-        <input type="text" id="f_room" placeholder="เช่น 4/2">
-        <div class="error">กรุณากรอกห้อง</div>
-      </div>` : `
+        <label for="f_room">ห้อง ${isTeam?'(เช่น 1/1, 1/2)':''} <span class="req">*</span></label>
+        <input type="text" id="f_room" placeholder="เช่น 1/1, 1/2, 4/2">
+        <div class="error">กรุณากรอกห้อง (เช่น 1/1, 1/2)</div>
+      </div>
+
+      ${isTeam ? `
       <div class="field" data-field="members">
         <label>รายชื่อสมาชิกในทีม <span class="req">*</span></label>
         <div class="member-rows" id="memberRows">${memberRowsHTML}</div>
         <button type="button" class="add-member" id="addMemberBtn" ${act.teamMin>=act.teamMax?'style="display:none"':''}>+ เพิ่มสมาชิก (สูงสุด ${act.teamMax} คน)</button>
         <div class="error">กรุณากรอกชื่อสมาชิกให้ครบ</div>
-      </div>`}
+      </div>` : ''}
 
       <div class="field" data-field="phone">
         <label for="f_phone">เบอร์โทรติดต่อ${isTeam?' (หัวหน้าทีม)':''} <span class="req">*</span></label>
@@ -824,12 +855,11 @@ async function handleSubmit(e){
   data.grade = document.getElementById('f_grade').value;
   { const ok=!!data.grade; setFieldError(gradeField, !ok); if(!ok) valid=false; }
 
-  if(!isTeam){
-    const roomField = document.querySelector('[data-field="room"]');
-    data.room = document.getElementById('f_room').value.trim();
-    const ok = !!data.room;
-    setFieldError(roomField, !ok); if(!ok) valid=false;
-  } else {
+  const roomField = document.querySelector('[data-field="room"]');
+  data.room = document.getElementById('f_room').value.trim();
+  { const ok = !!data.room; setFieldError(roomField, !ok); if(!ok) valid=false; }
+
+  if(isTeam){
     const membersField = document.querySelector('[data-field="members"]');
     const inputs = Array.from(document.querySelectorAll('.member-input'));
     data.members = inputs.map(i=>i.value.trim()).filter(v=>v.length>0);
@@ -966,14 +996,35 @@ function csvEscape(v){ if(v==null) return ''; const s=String(v).replace(/"/g,'""
 function exportCSV(actId){
   const act = ACTIVITIES.find(a=>a.id===actId);
   const list = activitiesState[actId] || [];
-  const cols = act.mode==='team'
-    ? ['id','teamName','grade','members','phone', ...act.extraFields.map(f=>f.id), 'timestamp']
+  const isTeam = act.mode === 'team';
+  const cols = isTeam
+    ? ['id','teamName','grade','room','members','phone', ...act.extraFields.map(f=>f.id), 'timestamp']
     : ['id','fullName','grade','room','phone', ...act.extraFields.map(f=>f.id), 'timestamp'];
-  const rows = [cols.join(',')];
+
+  const headerMap = {
+    id: 'รหัส',
+    teamName: 'ชื่อทีม',
+    fullName: 'ชื่อ-นามสกุล',
+    grade: 'ระดับชั้น',
+    room: 'ห้อง',
+    members: 'รายชื่อสมาชิก',
+    phone: 'เบอร์โทรศัพท์',
+    timestamp: 'เวลาสมัคร'
+  };
+  act.extraFields.forEach(f => {
+    headerMap[f.id] = f.label;
+  });
+
+  const headers = cols.map(c => csvEscape(headerMap[c] || c));
+  const rows = [headers.join(',')];
+
   list.forEach(r=>{
     rows.push(cols.map(c=>{
       let v = r[c];
       if(c==='members' && Array.isArray(v)) v = v.join(' / ');
+      if(c==='timestamp' && v) {
+        try { v = new Date(v).toLocaleString('th-TH'); } catch(e){}
+      }
       return csvEscape(v);
     }).join(','));
   });
@@ -1018,7 +1069,8 @@ function renderAdminPanel(){
           <th>รหัส</th>
           <th>${isTeam?'ชื่อทีม':'ชื่อ-นามสกุล'}</th>
           <th>ระดับชั้น</th>
-          <th>${isTeam?'สมาชิก':'ห้อง'}</th>
+          <th>ห้อง</th>
+          ${isTeam?'<th>สมาชิก</th>':''}
           <th>โทรศัพท์</th>
           ${act.extraFields.map(f=>`<th>${f.label}</th>`).join('')}
           <th>เวลาสมัคร</th>
@@ -1028,7 +1080,8 @@ function renderAdminPanel(){
             <td>${r.id}</td>
             <td>${isTeam? r.teamName : r.fullName}</td>
             <td>${r.grade||''}</td>
-            <td>${isTeam? (r.members||[]).join(', ') : (r.room||'')}</td>
+            <td>${r.room||''}</td>
+            ${isTeam?`<td>${(r.members||[]).join(', ')}</td>`:''}
             <td>${r.phone||''}</td>
             ${act.extraFields.map(f=>`<td>${r[f.id]||''}</td>`).join('')}
             <td>${new Date(r.timestamp).toLocaleString('th-TH')}</td>
@@ -1048,8 +1101,9 @@ function renderAdminPanel(){
 /* =========================================================
    INIT
    ========================================================= */
-loadAll();
-setInterval(loadAll, 3000);
+loadAll().then(() => {
+  initRealtimeListener();
+});
 tickCountdown();
 setInterval(tickCountdown, 1000);
 </script>
