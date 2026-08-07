@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>สัปดาห์วันวิทยาศาสตร์ 2569 | ลงทะเบียนแข่งขัน</title>
-<link rel="icon" type="image/png" href="/School-logo.png">
+<link rel="icon" type="image/png" href="/123.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -385,7 +385,7 @@ td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim);
 <nav class="nav">
   <div class="nav-inner">
     <div class="nav-brand">
-      <img src="/School-logo.png" alt="โลโก้โรงเรียน" class="mark" />
+      <img src="/123.png" alt="โลโก้โรงเรียน" class="mark" />
       <span class="label">โรงเรียนวรคุณอุปถัมภ์ · <strong>สัปดาห์วันวิทยาศาสตร์</strong></span>
     </div>
     <a href="#activities" class="nav-cta">สมัครแข่งขัน</a>
@@ -394,7 +394,7 @@ td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim);
 
 <section class="hero">
   <div class="hero-logo-wrap">
-    <img src="/Crest.png" alt="โลโก้งานวิทยาศาสตร์" class="hero-logo" />
+    <img src="/456.png" alt="โลโก้งานวิทยาศาสตร์" class="hero-logo" />
   </div>
   <p class="eyebrow">กลุ่มสาระการเรียนรู้วิทยาศาสตร์และเทคโนโลยี · ปีการศึกษา 2569</p>
   <h1>สัปดาห์วัน<span class="accent">วิทยาศาสตร์</span><br>เปิดรับสมัครแข่งขันแล้ววันนี้</h1>
@@ -497,7 +497,7 @@ td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim);
 
 <script type="module">
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { initializeFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   projectId: "dogwood-provider-lcf5x",
@@ -507,7 +507,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-window.db = getFirestore(app, "ai-studio-7cc38071-589f-44ad-ae71-6b6190adf747");
+window.db = initializeFirestore(app, { experimentalForceLongPolling: true }, "ai-studio-7cc38071-589f-44ad-ae71-6b6190adf747");
 window.doc = doc;
 window.getDoc = getDoc;
 window.setDoc = setDoc;
