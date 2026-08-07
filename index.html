@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>สัปดาห์วันวิทยาศาสตร์ 2569 | ลงทะเบียนแข่งขัน</title>
-<link rel="icon" type="image/png" href="/school-logo.png">
+<link rel="icon" type="image/png" href="/School-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -385,7 +385,7 @@ td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim);
 <nav class="nav">
   <div class="nav-inner">
     <div class="nav-brand">
-      <img src="/school-logo.png" alt="โลโก้โรงเรียน" class="mark" />
+      <img src="/School-logo.png" alt="โลโก้โรงเรียน" class="mark" />
       <span class="label">โรงเรียนวรคุณอุปถัมภ์ · <strong>สัปดาห์วันวิทยาศาสตร์</strong></span>
     </div>
     <a href="#activities" class="nav-cta">สมัครแข่งขัน</a>
@@ -394,7 +394,7 @@ td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim);
 
 <section class="hero">
   <div class="hero-logo-wrap">
-    <img src="/crest.png" alt="โลโก้งานวิทยาศาสตร์" class="hero-logo" />
+    <img src="/Crest.png" alt="โลโก้งานวิทยาศาสตร์" class="hero-logo" />
   </div>
   <p class="eyebrow">กลุ่มสาระการเรียนรู้วิทยาศาสตร์และเทคโนโลยี · ปีการศึกษา 2569</p>
   <h1>สัปดาห์วัน<span class="accent">วิทยาศาสตร์</span><br>เปิดรับสมัครแข่งขันแล้ววันนี้</h1>
@@ -495,32 +495,22 @@ td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim);
   <span id="toastMsg"></span>
 </div>
 
-<script>
-/* =========================================================
-   Fallback for window.storage if not provided by environment
-   ========================================================= */
-if (!window.storage) {
-  window.storage = {
-    get: async (key, local) => {
-      try {
-        const val = localStorage.getItem(key);
-        return val ? { value: val } : null;
-      } catch (e) {
-        console.warn("localStorage is not available.");
-        return null;
-      }
-    },
-    set: async (key, value, local) => {
-      try {
-        localStorage.setItem(key, value);
-        return true;
-      } catch (e) {
-        console.warn("Could not save to localStorage.");
-        return false;
-      }
-    }
-  };
-}
+<script type="module">
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+
+const firebaseConfig = {
+  projectId: "dogwood-provider-lcf5x",
+  appId: "1:462562646689:web:d002cbc35d38f921706ee0",
+  apiKey: "AIzaSyCqCrkizf9tfbLyZB8Hk7c8p6SPWMfDdHs",
+  authDomain: "dogwood-provider-lcf5x.firebaseapp.com"
+};
+
+const app = initializeApp(firebaseConfig);
+window.db = getFirestore(app, "ai-studio-7cc38071-589f-44ad-ae71-6b6190adf747");
+window.doc = doc;
+window.getDoc = getDoc;
+window.setDoc = setDoc;
 
 /* =========================================================
    CONFIG — edit these to adjust the event
@@ -598,15 +588,26 @@ function isPastDeadline(){ return Date.now() > DEADLINE.getTime(); }
 
 async function getRegistrants(id){
   try{
-    const res = await window.storage.get('reg:'+id, true);
-    return res ? JSON.parse(res.value) : [];
-  }catch(e){ return []; }
+    const docRef = window.doc(window.db, "registrations", id);
+    const docSnap = await window.getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data().list || [];
+    }
+    return [];
+  }catch(e){
+    console.error("Error getting document:", e);
+    return [];
+  }
 }
 async function saveRegistrants(id, list){
   try{
-    const res = await window.storage.set('reg:'+id, JSON.stringify(list), true);
-    return !!res;
-  }catch(e){ return false; }
+    const docRef = window.doc(window.db, "registrations", id);
+    await window.setDoc(docRef, { list });
+    return true;
+  }catch(e){
+    console.error("Error saving document:", e);
+    return false;
+  }
 }
 
 /* =========================================================
