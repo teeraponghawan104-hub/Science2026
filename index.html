@@ -344,6 +344,16 @@ body.past-deadline .closed-banner{display:inline-flex; align-items:center; gap:8
 .btn-tiny{font-size:12px; padding:10px 14px; min-height:44px; border-radius:100px; border:1px solid var(--border-strong); background:none; color:var(--text-dim); display:inline-flex; align-items:center; justify-content:center;}
 .btn-tiny:hover{color:var(--text);}
 .btn-tiny.danger{color:var(--danger); border-color:rgba(255,107,107,0.35);}
+.btn-del-item{
+  font-size:11.5px; padding:4px 10px; border-radius:100px;
+  border:1px solid rgba(255,107,107,0.4); background:rgba(255,107,107,0.12);
+  color:var(--danger); cursor:pointer; font-family:var(--font-body);
+  display:inline-flex; align-items:center; justify-content:center;
+  transition:all 0.15s ease; white-space:nowrap;
+}
+.btn-del-item:hover{
+  background:var(--danger); color:#fff; border-color:var(--danger);
+}
 .admin-table-wrap{max-height:340px; overflow-y:auto; overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid var(--border); border-radius:var(--radius-sm); max-width:100%;}
 table{width:100%; border-collapse:collapse; font-size:12.5px;}
 th{text-align:left; padding:10px 12px; color:var(--text-mute); font-weight:500; background:var(--surface-2); position:sticky; top:0; white-space:nowrap;}
@@ -1036,18 +1046,103 @@ function exportCSV(actId){
   URL.revokeObjectURL(url);
 }
 
-async function resetActivity(actId){
-  if(!confirm('ยืนยันการล้างรายชื่อผู้สมัครทั้งหมดของกิจกรรมนี้? การกระทำนี้ไม่สามารถย้อนกลับได้')) return;
-  await saveRegistrants(actId, []);
-  activitiesState[actId] = [];
-  renderActivities();
-  renderAdminPanel();
+function showConfirmModal({ title, message, confirmText = 'ยืนยัน', onConfirm }) {
+  let confirmOverlay = document.getElementById('confirmOverlay');
+  if(!confirmOverlay) {
+    confirmOverlay = document.createElement('div');
+    confirmOverlay.id = 'confirmOverlay';
+    confirmOverlay.className = 'overlay';
+    confirmOverlay.style.zIndex = '1000';
+    document.body.appendChild(confirmOverlay);
+  }
+  confirmOverlay.innerHTML = `
+    <div class="modal" style="max-width:380px; text-align:center; padding:24px 20px;">
+      <div style="width:48px; height:48px; border-radius:50%; background:rgba(255,107,107,0.15); color:var(--danger); display:flex; align-items:center; justify-content:center; margin:0 auto 12px auto;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
+      </div>
+      <h3 style="font-size:17px; font-weight:600; margin-bottom:8px; color:var(--text);">${title}</h3>
+      <p style="font-size:13.5px; color:var(--text-mute); margin-bottom:20px; line-height:1.5;">${message}</p>
+      <div style="display:flex; gap:10px; justify-content:center;">
+        <button id="confirmCancelBtn" class="btn-tiny" style="padding:8px 18px; font-size:13px; cursor:pointer;">ยกเลิก</button>
+        <button id="confirmOkBtn" class="btn-tiny danger" style="padding:8px 18px; font-size:13px; background:var(--danger); color:#fff; border:none; cursor:pointer;">${confirmText}</button>
+      </div>
+    </div>
+  `;
+  confirmOverlay.classList.add('open');
+
+  const close = () => {
+    confirmOverlay.classList.remove('open');
+  };
+
+  document.getElementById('confirmCancelBtn').onclick = close;
+  document.getElementById('confirmOkBtn').onclick = async () => {
+    close();
+    await onConfirm();
+  };
 }
+
+async function resetActivity(actId){
+  const act = ACTIVITIES.find(a=>a.id===actId);
+  showConfirmModal({
+    title: 'ยืนยันล้างรายชื่อทั้งหมด',
+    message: `คุณต้องการล้างรายชื่อผู้สมัครทั้งหมดของกิจกรรม "${act.name}" ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้`,
+    confirmText: 'ล้างทั้งหมด',
+    onConfirm: async () => {
+      await saveRegistrants(actId, []);
+      activitiesState[actId] = [];
+      renderActivities();
+      renderAdminPanel();
+      showToast('ล้างรายชื่อทั้งหมดเรียบร้อยแล้ว');
+    }
+  });
+}
+
+function deleteSingleRegistrant(actId, regId){
+  const act = ACTIVITIES.find(a=>a.id===actId);
+  const list = activitiesState[actId] || [];
+  const target = list.find(r=>r.id===regId);
+  if(!target) return;
+  const targetName = target.teamName || target.fullName || regId;
+
+  showConfirmModal({
+    title: 'ยืนยันการลบผู้สมัคร',
+    message: `คุณต้องการลบผู้สมัคร "${targetName}" (${regId}) ออกจากกิจกรรม ${act.name} ใช่หรือไม่?`,
+    confirmText: 'ลบรายชื่อ',
+    onConfirm: async () => {
+      const newList = list.filter(r=>r.id !== regId);
+      const saved = await saveRegistrants(actId, newList);
+      if(saved){
+        activitiesState[actId] = newList;
+        renderActivities();
+        renderAdminPanel();
+        showToast('ลบ ' + targetName + ' เรียบร้อยแล้ว');
+      } else {
+        showToast('เกิดข้อผิดพลาดในการลบข้อมูล');
+      }
+    }
+  });
+}
+
+let adminSearchQuery = '';
 
 function renderAdminPanel(){
   const act = ACTIVITIES.find(a=>a.id===adminActiveTab);
   const list = activitiesState[act.id] || [];
   const isTeam = act.mode==='team';
+
+  let filteredList = list;
+  if(adminSearchQuery.trim()){
+    const q = adminSearchQuery.trim().toLowerCase();
+    filteredList = list.filter(r => {
+      const idMatch = (r.id || '').toLowerCase().includes(q);
+      const nameMatch = (r.fullName || r.teamName || '').toLowerCase().includes(q);
+      const roomMatch = (r.room || '').toLowerCase().includes(q);
+      const gradeMatch = (r.grade || '').toLowerCase().includes(q);
+      const phoneMatch = (r.phone || '').toLowerCase().includes(q);
+      const memberMatch = Array.isArray(r.members) && r.members.some(m => m.toLowerCase().includes(q));
+      return idMatch || nameMatch || roomMatch || gradeMatch || phoneMatch || memberMatch;
+    });
+  }
 
   adminBody.innerHTML = `
     <p class="modal-eyebrow">แผงควบคุมสำหรับเจ้าหน้าที่</p>
@@ -1059,11 +1154,14 @@ function renderAdminPanel(){
       <span class="count">สมัครแล้ว <strong>${list.length}</strong> / ${act.maxSeats} ${act.unit}</span>
       <div class="admin-btns">
         <button class="btn-tiny" id="exportBtn">ส่งออก CSV</button>
-        <button class="btn-tiny danger" id="resetBtn">ล้างรายชื่อ</button>
+        <button class="btn-tiny danger" id="resetBtn">ล้างรายชื่อทั้งหมด</button>
       </div>
     </div>
+    <div style="margin-bottom:12px;">
+      <input type="text" id="adminSearchInput" placeholder="🔍 ค้นหาชื่อ, รหัส, ห้อง..." value="${adminSearchQuery}" style="width:100%; background:var(--bg); border:1px solid var(--border-strong); color:var(--text); border-radius:var(--radius-sm); padding:8px 12px; font-size:13px;">
+    </div>
     <div class="admin-table-wrap">
-      ${list.length===0 ? '<div class="admin-empty">ยังไม่มีผู้สมัครในกิจกรรมนี้</div>' : `
+      ${filteredList.length===0 ? '<div class="admin-empty">' + (list.length === 0 ? 'ยังไม่มีผู้สมัครในกิจกรรมนี้' : 'ไม่พบรายชื่อที่ค้นหา') + '</div>' : `
       <table>
         <thead><tr>
           <th>รหัส</th>
@@ -1074,17 +1172,21 @@ function renderAdminPanel(){
           <th>โทรศัพท์</th>
           ${act.extraFields.map(f=>`<th>${f.label}</th>`).join('')}
           <th>เวลาสมัคร</th>
+          <th style="text-align:center;">จัดการ</th>
         </tr></thead>
         <tbody>
-          ${list.map(r=>`<tr>
+          ${filteredList.map(r=>`<tr>
             <td>${r.id}</td>
-            <td>${isTeam? r.teamName : r.fullName}</td>
+            <td><strong>${isTeam? r.teamName : r.fullName}</strong></td>
             <td>${r.grade||''}</td>
             <td>${r.room||''}</td>
             ${isTeam?`<td>${(r.members||[]).join(', ')}</td>`:''}
             <td>${r.phone||''}</td>
             ${act.extraFields.map(f=>`<td>${r[f.id]||''}</td>`).join('')}
             <td>${new Date(r.timestamp).toLocaleString('th-TH')}</td>
+            <td style="text-align:center;">
+              <button class="btn-del-item" data-del-id="${r.id}">ลบ</button>
+            </td>
           </tr>`).join('')}
         </tbody>
       </table>`}
@@ -1094,8 +1196,26 @@ function renderAdminPanel(){
   adminBody.querySelectorAll('[data-tab]').forEach(btn=>{
     btn.addEventListener('click', ()=>{ adminActiveTab = btn.getAttribute('data-tab'); renderAdminPanel(); });
   });
+  const searchInput = document.getElementById('adminSearchInput');
+  if(searchInput){
+    searchInput.addEventListener('input', (e)=>{
+      adminSearchQuery = e.target.value;
+      renderAdminPanel();
+      const newSearchInput = document.getElementById('adminSearchInput');
+      if(newSearchInput){
+        newSearchInput.focus();
+        newSearchInput.setSelectionRange(adminSearchQuery.length, adminSearchQuery.length);
+      }
+    });
+  }
   document.getElementById('exportBtn').addEventListener('click', ()=>exportCSV(act.id));
   document.getElementById('resetBtn').addEventListener('click', ()=>resetActivity(act.id));
+  adminBody.querySelectorAll('[data-del-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const regId = btn.getAttribute('data-del-id');
+      deleteSingleRegistrant(act.id, regId);
+    });
+  });
 }
 
 /* =========================================================
