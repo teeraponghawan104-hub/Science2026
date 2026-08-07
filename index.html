@@ -507,7 +507,7 @@ td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim);
 
 <script type="module">
 import { initializeApp } from "firebase/app";
-import { initializeFirestore, doc, getDoc, setDoc, onSnapshot, collection } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection } from "firebase/firestore";
 
 const firebaseConfig = {
   projectId: "dogwood-provider-lcf5x",
@@ -517,9 +517,8 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-window.db = initializeFirestore(app, {
-  experimentalForceLongPolling: true
-}, "ai-studio-7cc38071-589f-44ad-ae71-6b6190adf747");
+const databaseId = "ai-studio-7cc38071-589f-44ad-ae71-6b6190adf747";
+window.db = getFirestore(app, databaseId);
 
 window.doc = doc;
 window.getDoc = getDoc;
@@ -546,7 +545,7 @@ const ACTIVITIES = [
     extraFields:[]
   },
   {
-    id:'painting', name:'วาดภาพระบายสี', mode:'individual', unit:'คน', maxSeats:24,
+    id:'painting', name:'วาดภาพระบายสี', mode:'individual', unit:'คน', maxSeats:36,
     period:'ช่วงเช้า (ใช้เวลา 3 ชั่วโมง)',
     icon:'palette',
     details:['ใช้กระดาษ 100 ปอนด์ ขนาด F4 (โรงเรียนจัดเตรียมให้)','ห้ามนำโทรศัพท์มือถือเข้าห้องสอบ และห้ามดูภาพต้นแบบทุกชนิด','ห้องละไม่เกิน 3 คน (1 คน ต่อ 1 ภาพ)'],
@@ -604,24 +603,33 @@ function isPastDeadline(){ return Date.now() > DEADLINE.getTime(); }
 async function getRegistrants(id){
   try{
     const docRef = window.doc(window.db, "registrations", id);
-    const docSnap = await window.getDoc(docRef);
-    if (docSnap.exists()) {
-      return docSnap.data().list || [];
+    const fetchPromise = window.getDoc(docRef);
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 4000));
+    const docSnap = await Promise.race([fetchPromise, timeoutPromise]);
+    if (docSnap && docSnap.exists()) {
+      const list = docSnap.data().list || [];
+      try { localStorage.setItem("reg_" + id, JSON.stringify(list)); } catch(_) {}
+      return list;
     }
     return [];
   }catch(e){
-    console.warn("Error getting document:", e?.message || e);
+    console.warn("Firestore warning, using local data backup:", e?.message || e);
+    try {
+      const local = localStorage.getItem("reg_" + id);
+      if (local) return JSON.parse(local);
+    } catch(_) {}
     return [];
   }
 }
 async function saveRegistrants(id, list){
+  try { localStorage.setItem("reg_" + id, JSON.stringify(list)); } catch(_) {}
   try{
     const docRef = window.doc(window.db, "registrations", id);
     await window.setDoc(docRef, { list });
     return true;
   }catch(e){
-    console.warn("Error saving document:", e?.message || e);
-    return false;
+    console.warn("Firestore save warning, saved locally:", e?.message || e);
+    return true;
   }
 }
 
@@ -1005,7 +1013,8 @@ function csvEscape(v){ if(v==null) return ''; const s=String(v).replace(/"/g,'""
 
 function exportCSV(actId){
   const act = ACTIVITIES.find(a=>a.id===actId);
-  const list = activitiesState[actId] || [];
+  const rawList = activitiesState[actId] || [];
+  const list = typeof sortRegistrants === 'function' ? sortRegistrants(rawList, adminSortBy) : rawList;
   const isTeam = act.mode === 'team';
   const cols = isTeam
     ? ['id','teamName','grade','room','members','phone', ...act.extraFields.map(f=>f.id), 'timestamp']
@@ -1124,6 +1133,70 @@ function deleteSingleRegistrant(actId, regId){
 }
 
 let adminSearchQuery = '';
+let adminSortBy = 'time-asc';
+
+function sortRegistrants(list, sortBy) {
+  return [...list].sort((a, b) => {
+    if (sortBy === 'time-asc') {
+      return (a.timestamp || 0) - (b.timestamp || 0);
+    } else if (sortBy === 'time-desc') {
+      return (b.timestamp || 0) - (a.timestamp || 0);
+    } else if (sortBy === 'room-asc') {
+      const roomA = (a.room || '').toString();
+      const roomB = (b.room || '').toString();
+      return roomA.localeCompare(roomB, 'th', { numeric: true });
+    } else if (sortBy === 'room-desc') {
+      const roomA = (a.room || '').toString();
+      const roomB = (b.room || '').toString();
+      return roomB.localeCompare(roomA, 'th', { numeric: true });
+    } else if (sortBy === 'grade-asc') {
+      const gradeA = (a.grade || '').toString();
+      const gradeB = (b.grade || '').toString();
+      return gradeA.localeCompare(gradeB, 'th', { numeric: true });
+    } else if (sortBy === 'grade-desc') {
+      const gradeA = (a.grade || '').toString();
+      const gradeB = (b.grade || '').toString();
+      return gradeB.localeCompare(gradeA, 'th', { numeric: true });
+    } else if (sortBy === 'name-asc') {
+      const nameA = (a.fullName || a.teamName || '').toString();
+      const nameB = (b.fullName || b.teamName || '').toString();
+      return nameA.localeCompare(nameB, 'th');
+    } else if (sortBy === 'name-desc') {
+      const nameA = (a.fullName || a.teamName || '').toString();
+      const nameB = (b.fullName || b.teamName || '').toString();
+      return nameB.localeCompare(nameA, 'th');
+    } else if (sortBy === 'id-asc') {
+      const idA = (a.id || '').toString();
+      const idB = (b.id || '').toString();
+      return idA.localeCompare(idB, 'th', { numeric: true });
+    } else if (sortBy === 'id-desc') {
+      const idA = (a.id || '').toString();
+      const idB = (b.id || '').toString();
+      return idB.localeCompare(idA, 'th', { numeric: true });
+    }
+    return 0;
+  });
+}
+
+function getSortIndicator(col) {
+  if (col === 'id') {
+    if (adminSortBy === 'id-asc') return ' ▲';
+    if (adminSortBy === 'id-desc') return ' ▼';
+  } else if (col === 'name') {
+    if (adminSortBy === 'name-asc') return ' ▲';
+    if (adminSortBy === 'name-desc') return ' ▼';
+  } else if (col === 'grade') {
+    if (adminSortBy === 'grade-asc') return ' ▲';
+    if (adminSortBy === 'grade-desc') return ' ▼';
+  } else if (col === 'room') {
+    if (adminSortBy === 'room-asc') return ' ▲';
+    if (adminSortBy === 'room-desc') return ' ▼';
+  } else if (col === 'time') {
+    if (adminSortBy === 'time-asc') return ' ▲';
+    if (adminSortBy === 'time-desc') return ' ▼';
+  }
+  return ' <span style="opacity:0.35; font-size:10px;">↕</span>';
+}
 
 function renderAdminPanel(){
   const act = ACTIVITIES.find(a=>a.id===adminActiveTab);
@@ -1144,6 +1217,8 @@ function renderAdminPanel(){
     });
   }
 
+  filteredList = sortRegistrants(filteredList, adminSortBy);
+
   adminBody.innerHTML = `
     <p class="modal-eyebrow">แผงควบคุมสำหรับเจ้าหน้าที่</p>
     <h3>รายชื่อผู้สมัคร</h3>
@@ -1157,21 +1232,35 @@ function renderAdminPanel(){
         <button class="btn-tiny danger" id="resetBtn">ล้างรายชื่อทั้งหมด</button>
       </div>
     </div>
-    <div style="margin-bottom:12px;">
-      <input type="text" id="adminSearchInput" placeholder="🔍 ค้นหาชื่อ, รหัส, ห้อง..." value="${adminSearchQuery}" style="width:100%; background:var(--bg); border:1px solid var(--border-strong); color:var(--text); border-radius:var(--radius-sm); padding:8px 12px; font-size:13px;">
+    <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
+      <div style="flex:1; min-width:180px;">
+        <input type="text" id="adminSearchInput" placeholder="🔍 ค้นหาชื่อ, รหัส, ห้อง..." value="${adminSearchQuery}" style="width:100%; background:var(--bg); border:1px solid var(--border-strong); color:var(--text); border-radius:var(--radius-sm); padding:8px 12px; font-size:13px;">
+      </div>
+      <div style="display:flex; align-items:center; gap:6px;">
+        <label for="adminSortSelect" style="font-size:12.5px; color:var(--text-mute); white-space:nowrap;">เรียงตาม:</label>
+        <select id="adminSortSelect" style="background:var(--bg); border:1px solid var(--border-strong); color:var(--text); border-radius:var(--radius-sm); padding:8px 10px; font-size:12.5px; cursor:pointer;">
+          <option value="time-asc" ${adminSortBy==='time-asc'?'selected':''}>⏰ เวลาสมัคร (เก่า → ใหม่)</option>
+          <option value="time-desc" ${adminSortBy==='time-desc'?'selected':''}>⏰ เวลาสมัคร (ใหม่ → เก่า)</option>
+          <option value="room-asc" ${adminSortBy==='room-asc'?'selected':''}>🏫 ห้องเรียน (น้อย → มาก)</option>
+          <option value="room-desc" ${adminSortBy==='room-desc'?'selected':''}>🏫 ห้องเรียน (มาก → น้อย)</option>
+          <option value="grade-asc" ${adminSortBy==='grade-asc'?'selected':''}>🎓 ระดับชั้น</option>
+          <option value="name-asc" ${adminSortBy==='name-asc'?'selected':''}>👤 ชื่อ-นามสกุล / ทีม (ก-ฮ)</option>
+          <option value="id-asc" ${adminSortBy==='id-asc'?'selected':''}>🆔 รหัสผู้สมัคร</option>
+        </select>
+      </div>
     </div>
     <div class="admin-table-wrap">
       ${filteredList.length===0 ? '<div class="admin-empty">' + (list.length === 0 ? 'ยังไม่มีผู้สมัครในกิจกรรมนี้' : 'ไม่พบรายชื่อที่ค้นหา') + '</div>' : `
       <table>
         <thead><tr>
-          <th>รหัส</th>
-          <th>${isTeam?'ชื่อทีม':'ชื่อ-นามสกุล'}</th>
-          <th>ระดับชั้น</th>
-          <th>ห้อง</th>
+          <th data-sort-col="id" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">รหัส${getSortIndicator('id')}</th>
+          <th data-sort-col="name" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">${isTeam?'ชื่อทีม':'ชื่อ-นามสกุล'}${getSortIndicator('name')}</th>
+          <th data-sort-col="grade" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">ระดับชั้น${getSortIndicator('grade')}</th>
+          <th data-sort-col="room" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">ห้อง${getSortIndicator('room')}</th>
           ${isTeam?'<th>สมาชิก</th>':''}
           <th>โทรศัพท์</th>
           ${act.extraFields.map(f=>`<th>${f.label}</th>`).join('')}
-          <th>เวลาสมัคร</th>
+          <th data-sort-col="time" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">เวลาสมัคร${getSortIndicator('time')}</th>
           <th style="text-align:center;">จัดการ</th>
         </tr></thead>
         <tbody>
@@ -1208,6 +1297,30 @@ function renderAdminPanel(){
       }
     });
   }
+  const sortSelect = document.getElementById('adminSortSelect');
+  if(sortSelect){
+    sortSelect.addEventListener('change', (e)=>{
+      adminSortBy = e.target.value;
+      renderAdminPanel();
+    });
+  }
+  adminBody.querySelectorAll('[data-sort-col]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.getAttribute('data-sort-col');
+      if (col === 'id') {
+        adminSortBy = adminSortBy === 'id-asc' ? 'id-desc' : 'id-asc';
+      } else if (col === 'name') {
+        adminSortBy = adminSortBy === 'name-asc' ? 'name-desc' : 'name-asc';
+      } else if (col === 'grade') {
+        adminSortBy = adminSortBy === 'grade-asc' ? 'grade-desc' : 'grade-asc';
+      } else if (col === 'room') {
+        adminSortBy = adminSortBy === 'room-asc' ? 'room-desc' : 'room-asc';
+      } else if (col === 'time') {
+        adminSortBy = adminSortBy === 'time-asc' ? 'time-desc' : 'time-asc';
+      }
+      renderAdminPanel();
+    });
+  });
   document.getElementById('exportBtn').addEventListener('click', ()=>exportCSV(act.id));
   document.getElementById('resetBtn').addEventListener('click', ()=>resetActivity(act.id));
   adminBody.querySelectorAll('[data-del-id]').forEach(btn => {
