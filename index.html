@@ -1643,10 +1643,23 @@ function renderAdminPanel(){
              fullRoom = 'ม.' + gNum + '/' + roomNum;
            }
          }
+         const isTeamAct = ACTIVITIES.find(a => a.id === actId)?.mode === 'team';
+         const increment = (isTeamAct && Array.isArray(r.members)) ? Math.max(1, r.members.length) : 1;
+         
          if (!roomStats[fullRoom]) roomStats[fullRoom] = { total: 0, activities: {} };
-         roomStats[fullRoom].total++;
-         if (!roomStats[fullRoom].activities[actId]) roomStats[fullRoom].activities[actId] = 0;
-         roomStats[fullRoom].activities[actId]++;
+         roomStats[fullRoom].total += increment;
+         
+         if (!roomStats[fullRoom].activities[actId]) {
+           roomStats[fullRoom].activities[actId] = { count: 0, items: [] };
+         }
+         roomStats[fullRoom].activities[actId].count += increment;
+         
+         if (isTeamAct) {
+           const teamMembers = Array.isArray(r.members) && r.members.length > 0 ? r.members.join(', ') : 'ไม่มีข้อมูลสมาชิก';
+           roomStats[fullRoom].activities[actId].items.push(`ทีม: ${r.teamName || '-'} (${teamMembers})`);
+         } else {
+           roomStats[fullRoom].activities[actId].items.push(r.fullName || '-');
+         }
        });
      });
      let roomStatsArr = Object.keys(roomStats).map(room => ({ room, total: roomStats[room].total, activities: roomStats[room].activities }));
@@ -1656,12 +1669,20 @@ function renderAdminPanel(){
           <div style="background:var(--bg-2); border:1px solid var(--border-strong); border-radius:10px; padding:12px 16px;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:8px;">
               <span style="font-weight:600; font-size:14px;">${r.room}</span>
-              <span style="background:var(--primary); color:#fff; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;">${r.total} รายการ</span>
+              <span style="background:var(--primary); color:#fff; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;">${r.total} คน</span>
             </div>
-            <div style="font-size:12px; color:var(--text-dim); display:flex; flex-direction:column; gap:4px;">
-              ${Object.entries(r.activities).map(([actId, count]) => {
+            <div style="font-size:12px; color:var(--text-dim); display:flex; flex-direction:column; gap:8px;">
+              ${Object.entries(r.activities).map(([actId, data]) => {
                  const actName = ACTIVITIES.find(a => a.id === actId)?.name || actId;
-                 return '<div style="display:flex; justify-content:space-between;"><span>' + actName + '</span><span>' + count + '</span></div>';
+                 return '<div style="border-bottom:1px dashed var(--border); padding-bottom:6px;">' +
+                        '<div style="display:flex; justify-content:space-between; color:var(--text); font-weight:600; margin-bottom:4px;">' +
+                        '<span>' + actName + '</span>' +
+                        '<span>' + data.count + ' คน</span>' +
+                        '</div>' +
+                        '<ul style="margin:0; padding-left:16px; color:var(--text-mute); list-style-type:circle;">' +
+                        data.items.map(item => '<li style="padding-bottom:2px;">' + item + '</li>').join('') +
+                        '</ul>' +
+                        '</div>';
               }).join('')}
             </div>
           </div>
