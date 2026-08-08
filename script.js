@@ -1,4 +1,3 @@
-
 /* =========================================================
    CONFIG — edit these to adjust the event
    ========================================================= */
@@ -83,10 +82,11 @@ async function fetchCounts(){
     if(res.ok) {
       const data = await res.json();
       activitiesState = data.summary;
-      renderActivities();
     }
   } catch(e) {
     console.error(e);
+  } finally {
+    renderActivities();
   }
 }
 
