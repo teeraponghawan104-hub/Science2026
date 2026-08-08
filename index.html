@@ -462,17 +462,18 @@ body {
 
 @media print {
   @page { size: A4 landscape; margin: 10mm; }
-  body { background: #fff !important; color: #000 !important; margin: 0; padding: 0; height: auto; overflow: visible; }
+  html, body { background: #fff !important; color: #000 !important; margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: none !important; }
   
   body > *:not(#printSection) { display: none !important; }
   
-  #printSection { display: block !important; position: relative !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
+  #printSection { display: block !important; position: static !important; width: 100% !important; max-width: none !important; padding: 0 !important; margin: 0 !important; }
   
-  table { border-collapse: collapse !important; width: 100% !important; page-break-inside: auto; margin-top: 20px; table-layout: auto !important; }
+  table { border-collapse: collapse !important; width: 100% !important; max-width: 100% !important; page-break-inside: auto; margin-top: 15px; table-layout: auto !important; }
   tr { page-break-inside: avoid; page-break-after: auto; }
-  th, td { border: 1px solid #000 !important; padding: 8px !important; font-size: 11pt !important; color: #000 !important; text-align: left; background: none !important; white-space: normal !important; word-wrap: break-word !important; overflow-wrap: break-word !important; }
+  th, td { border: 1px solid #000 !important; padding: 6px !important; font-size: 10pt !important; color: #000 !important; text-align: left; background: none !important; white-space: normal !important; word-break: normal !important; }
   
-  .print-header { display: block !important; font-size: 18pt; font-weight: bold; text-align: center; margin-bottom: 20px; color: #000; }
+  .print-nowrap { white-space: nowrap !important; }
+  .print-header { display: block !important; font-size: 16pt; font-weight: bold; text-align: center; margin-bottom: 10px; color: #000; }
 }
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto;}
@@ -1368,14 +1369,14 @@ function printRegistrants(actId) {
   
   let html = `<div class="print-header">รายชื่อผู้สมัคร: ${act.name}<br><span style="font-size:14pt; font-weight:normal; color:#444;">Woraluck Science Fair 2026</span></div>`;
   html += `<table><thead><tr>
-    <th>รหัส</th>
+    <th class="print-nowrap">รหัส</th>
     <th>${isTeam?'ชื่อทีม':'ชื่อ-นามสกุล'}</th>
-    <th>ระดับชั้น</th>
-    <th>ห้อง</th>
-    ${isTeam?'<th>สมาชิก</th>':''}
-    <th>โทรศัพท์</th>
+    <th class="print-nowrap">ระดับชั้น</th>
+    <th class="print-nowrap">ห้อง</th>
+    ${isTeam?'<th style="width:25%">สมาชิก</th>':''}
+    <th class="print-nowrap">โทรศัพท์</th>
     ${act.extraFields.map(f=>`<th>${f.label}</th>`).join('')}
-    <th>เวลาสมัคร</th>
+    <th class="print-nowrap">เวลาสมัคร</th>
   </tr></thead><tbody>`;
   
   if (list.length === 0) {
@@ -1388,14 +1389,14 @@ function printRegistrants(actId) {
       if (isTeam && Array.isArray(r.members)) membersStr = r.members.join(', ');
       
       html += `<tr>
-        <td>${r.id}</td>
+        <td class="print-nowrap">${r.id}</td>
         <td><strong>${isTeam ? r.teamName : r.fullName}</strong></td>
-        <td>${r.grade||''}</td>
-        <td>${r.room||''}</td>
+        <td class="print-nowrap">${r.grade||''}</td>
+        <td class="print-nowrap">${r.room||''}</td>
         ${isTeam ? `<td>${membersStr}</td>` : ''}
-        <td>${r.phone||''}</td>
+        <td class="print-nowrap">${r.phone||''}</td>
         ${act.extraFields.map(f=>`<td>${r[f.id]||''}</td>`).join('')}
-        <td>${timeStr}</td>
+        <td class="print-nowrap">${timeStr}</td>
       </tr>`;
     });
   }
