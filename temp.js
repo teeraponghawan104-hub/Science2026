@@ -1,17 +1,5 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>สัปดาห์วันวิทยาศาสตร์ 2569 | ลงทะเบียนแข่งขัน</title>
-<link rel="icon" type="image/png" href="/123.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
 /* =========================================================
    CONFIG NOTE (for teachers editing this file):
-   - Seat limits: see ACTIVITIES array in <script> below (maxSeats)
    - Deadline / event date: see DEADLINE / EVENT_DATE constants
    - Admin passcode: see ADMIN_CODE constant
    ========================================================= */
@@ -460,172 +448,24 @@ body {
   .grid { grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 2rem; }
 }
 
-@media print {
-  @page { size: A4 landscape; margin: 10mm; }
-  html, body { background: #fff !important; color: #000 !important; margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: none !important; }
-  
-  body > *:not(#printSection) { display: none !important; }
-  
-  #printSection { display: block !important; position: static !important; width: 100% !important; max-width: none !important; padding: 0 !important; margin: 0 !important; }
-  
-  table { border-collapse: collapse !important; width: 100% !important; max-width: 100% !important; page-break-inside: auto; margin-top: 15px; table-layout: auto !important; }
-  tr { page-break-inside: avoid; page-break-after: auto; }
-  th, td { border: 1px solid #000 !important; padding: 6px !important; font-size: 10pt !important; color: #000 !important; text-align: left; background: none !important; white-space: normal !important; word-break: normal !important; }
-  
-  .print-nowrap { white-space: nowrap !important; }
-  .print-header { display: block !important; font-size: 16pt; font-weight: bold; text-align: center; margin-bottom: 10px; color: #000; }
-}
-
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto;}
 }
-</style>
-</head>
-<body>
-<div id="printSection" class="print-only"></div>
 
-<nav class="nav">
-  <div class="nav-inner">
-    <div class="nav-brand">
-      <img src="/123.png" alt="โลโก้โรงเรียน" class="mark" />
-      <span class="label">โรงเรียนวรคุณอุปถัมภ์ · <strong>สัปดาห์วันวิทยาศาสตร์</strong></span>
-    </div>
-    <div style="display:flex; gap:10px;">
-      <a href="javascript:void(0)" class="nav-cta" style="background:#f1f5f9; color:#475569;" id="openStatusBtn">ตรวจสอบ/ยกเลิก</a>
-      <a href="#activities" class="nav-cta">สมัครแข่งขัน</a>
-    </div>
-  </div>
-</nav>
 
-<section class="hero">
-  <div class="hero-logo-wrap">
-    <img src="/456.png" alt="โลโก้งานวิทยาศาสตร์" class="hero-logo" />
-  </div>
-  <p class="eyebrow">กลุ่มสาระการเรียนรู้วิทยาศาสตร์และเทคโนโลยี · ปีการศึกษา 2569</p>
-  <h1>สัปดาห์วัน<span class="accent">วิทยาศาสตร์</span><br>เปิดรับสมัครแข่งขันแล้ววันนี้</h1>
-  <p class="quote">"จุดประกายความคิด พัฒนาชีวิตด้วยวิทยาศาสตร์ เสริมสร้างชาติด้วยเทคโนโลยี สู่วิถีแห่งนวัตกรรม"</p>
 
-  <div class="hero-meta">
-    <div class="meta-pill">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
-      วันจัดกิจกรรม <strong>20 สิงหาคม 2569</strong>
-    </div>
-    <div class="meta-pill">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
-      ปิดรับสมัคร <strong>13 สิงหาคม 2569</strong>
-    </div>
-  </div>
 
-  <div class="countdown" id="countdownBox">
-    <div class="countdown-label">เวลาที่เหลือในการรับสมัคร</div>
-    <div class="unit"><div class="num" id="cdDays">--</div><div class="lbl">วัน</div></div>
-    <div class="unit"><div class="num" id="cdHours">--</div><div class="lbl">ชั่วโมง</div></div>
-    <div class="unit"><div class="num" id="cdMins">--</div><div class="lbl">นาที</div></div>
-    <div class="unit"><div class="num" id="cdSecs">--</div><div class="lbl">วินาที</div></div>
-  </div>
 
-  <div class="hero-actions">
-    <a href="#activities" class="btn-primary">
       ดูรายการแข่งขันทั้งหมด
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-    </a>
-  </div>
-  <div class="closed-banner" id="closedBanner">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
     ขณะนี้ปิดรับสมัครแล้ว
-  </div>
-</section>
 
-<section class="section" id="activities">
-  <div class="container">
-    <div class="section-head">
-      <p class="eyebrow">รายการแข่งขัน</p>
-      <h2>เลือกกิจกรรมที่สนใจ</h2>
-      <p>ลงทะเบียนออนไลน์ผ่านหน้านี้เท่านั้น ระบบจะปิดรับสมัครอัตโนมัติเมื่อถึงกำหนดหรือที่นั่งเต็ม</p>
-    </div>
-    <div class="grid" id="activityGrid">
-      <p style="grid-column:1/-1; text-align:center; color:var(--text-mute); font-size:13.5px; padding:20px 0;">กำลังโหลดข้อมูลที่นั่ง...</p>
-    </div>
-  </div>
-</section>
 
-<section class="section" style="padding-top:0;">
-  <div class="container">
-    <div class="notes">
-      <div class="note-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>
-        <div><h4>จัดวันเดียว แบ่งเช้า-บ่าย</h4><p>กิจกรรมทั้งหมดจัดในวันที่ 20 สิงหาคม โดยแบ่งเป็นช่วงเช้าและช่วงบ่ายตามตารางของแต่ละรายการ</p></div>
-      </div>
-      <div class="note-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 10v4a2 2 0 002 2h6a2 2 0 002-2v-4M12 3v11M8 7l4-4 4 4"/></svg>
-        <div><h4>Popular Vote บนเวที</h4><p>กิจกรรมบนเวทีบางรายการ เช่น ประกวดชุดรีไซเคิล เปิดให้นักเรียนทุกระดับชั้นร่วมโหวตแบบสด</p></div>
-      </div>
-      <div class="note-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
-        <div><h4>ที่นั่งมีจำกัด</h4><p>แต่ละกิจกรรมรับจำนวนจำกัดตามความเหมาะสมของพื้นที่และเวลา ระบบจะปิดรับอัตโนมัติเมื่อเต็ม</p></div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<footer class="footer">
-  <div class="container footer-inner">
-    <div>
-      <p>จัดโดยกลุ่มสาระการเรียนรู้วิทยาศาสตร์และเทคโนโลยี โรงเรียนวรคุณอุปถัมภ์ · ข้อมูลผู้สมัครใช้เพื่อการจัดกิจกรรมเท่านั้น</p>
-      <p style="margin-top:6px; color:var(--text-dim); font-size:12.5px;">หากเกิดปัญหา ติดต่อ นศ.ฝึกประสบการณ์ นายธีระพงษ์ หาวัน (ครูทิว) โทร <a href="tel:0642320245" style="color:var(--teal); text-decoration:none; font-weight:500;">064-232-0245</a></p>
-    </div>
-    <button class="admin-link" id="adminOpenBtn" type="button">สำหรับครู / เจ้าหน้าที่</button>
-  </div>
-</footer>
 
-<!-- Registration Modal -->
-<div class="overlay" id="statusOverlay">
-  <div class="modal" id="statusModal" role="dialog" aria-modal="true" style="max-width:440px;">
-    <button class="modal-close" id="statusCloseBtn" aria-label="ปิด">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M18 6L6 18M6 6l12 12"/></svg>
-    </button>
-    <div class="modal-header" style="text-align:center;">
-      <div class="modal-icon" style="margin:0 auto 10px; background:#f1f5f9; color:#0284c7; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-      </div>
-      <h2 style="font-size:20px; font-weight:700;">ตรวจสอบ / ยกเลิกการสมัคร</h2>
-      <p style="color:var(--text-dim); margin-top:6px; font-size:14px;">กรอกรหัสอ้างอิงของคุณเพื่อดูสถานะหรือสละสิทธิ์</p>
-    </div>
-    <div class="modal-body" style="padding:0;">
-      <div class="field">
-        <input type="text" id="statusRegId" placeholder="รหัสอ้างอิง (เช่น ROC-123ABCD)" style="text-transform: uppercase;">
-      </div>
-      <button class="btn-submit" id="statusSearchBtn" style="margin-top:10px;">ค้นหาข้อมูล</button>
-      <div id="statusResult" style="margin-top:20px; display:none;"></div>
-    </div>
-  </div>
-</div>
 
-<div class="overlay" id="regOverlay">
-  <div class="modal" id="regModal" role="dialog" aria-modal="true">
-    <button class="modal-close" id="regCloseBtn" aria-label="ปิด">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M18 6L6 18M6 6l12 12"/></svg>
-    </button>
-    <div id="regBody"></div>
-  </div>
-</div>
 
-<!-- Admin Modal -->
-<div class="overlay" id="adminOverlay">
-  <div class="modal admin-modal" id="adminModal" role="dialog" aria-modal="true">
-    <button class="modal-close" id="adminCloseBtn" aria-label="ปิด">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M18 6L6 18M6 6l12 12"/></svg>
-    </button>
-    <div id="adminBody"></div>
-  </div>
-</div>
 
-<div class="toast" id="toast">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-  <span id="toastMsg"></span>
-</div>
 
-<script type="module">
 /* =========================================================
    CONFIG — edit these to adjust the event
    ========================================================= */
@@ -687,12 +527,6 @@ const ACTIVITIES = [
 ];
 
 const ICONS = {
-  rocket:'<path d="M12 2c2.5 2 4 5.5 4 9.5 0 2-1 4-1 4l-6 0s-1-2-1-4c0-4 1.5-7.5 4-9.5z"/><circle cx="12" cy="9" r="1.6"/><path d="M9.5 15.5L7 21l3-1.5M14.5 15.5L17 21l-3-1.5"/>',
-  palette:'<path d="M12 3a9 9 0 100 18c1.2 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.3-.5-.8-.5-1.2 0-1 .8-1.8 1.8-1.8H17a3 3 0 003-3c0-5-3.6-8.7-8-8.7z"/><circle cx="7.5" cy="10.5" r="1.1"/><circle cx="9.5" cy="7" r="1.1"/><circle cx="14.5" cy="7" r="1.1"/>',
-  pencil:'<path d="M4 20l1-4.5L15.5 5 19 8.5 8.5 19 4 20z"/><path d="M13.5 6.5L17.5 10.5"/>',
-  quiz:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 014.9.5c0 1.7-2.4 2-2.4 3.6"/><circle cx="12" cy="16.6" r="0.4" fill="currentColor"/>',
-  recycle:'<path d="M7 5L4.5 9.5h5L7 5z"/><path d="M17 5l2.5 4.5h-5L17 5z"/><path d="M12 19l-2.5-4.5h5L12 19z"/><path d="M4.5 9.5H9M15 9.5h4.5M9.5 14.5L7 19M14.5 14.5L17 19"/>',
-  flask:'<path d="M9 3h6M10 3v6l-4.5 8a2 2 0 001.7 3h9.6a2 2 0 001.7-3L14 9V3"/><path d="M8 15h8"/>'
 };
 
 /* =========================================================
@@ -740,26 +574,6 @@ function renderActivities(){
     const ringColor = cls==='status-full' ? 'var(--danger)' : (cls==='status-low' ? 'var(--gold)' : 'var(--teal)');
     const btnLabel = deadlinePassed ? 'ปิดรับสมัครแล้ว' : (full ? 'ที่นั่งเต็มแล้ว' : 'ลงทะเบียน');
     return `
-    <div class="card" data-mode="${act.mode}">
-      <div class="card-top">
-        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ICONS[act.icon]}</svg></div>
-        <div class="gauge-wrap">
-          <div class="gauge-ring" style="--pct:${pct}; --ring-color:${ringColor};"></div>
-          <div class="gauge-hole"><div class="n">${count}/${act.maxSeats}</div><div class="d">${act.unit}</div></div>
-        </div>
-      </div>
-      <h3>${act.name}</h3>
-      <div class="card-tags">
-        <span class="tag">${act.mode==='team' ? `ทีม ${act.teamMin===act.teamMax? act.teamMin : act.teamMin+'-'+act.teamMax} คน` : 'บุคคล'}</span>
-        <span class="tag">${act.period}</span>
-        <span class="tag ${cls}">${label}</span>
-      </div>
-      <ul class="card-details">${act.details.map(d=>`<li>${d}</li>`).join('')}</ul>
-      <div class="card-footer">
-        <span class="seats-left">เหลือ <strong>${Math.max(0, act.maxSeats-count)}</strong> ${act.unit}</span>
-        <button class="btn-card" ${disabled?'disabled':''} data-open="${act.id}">${btnLabel}</button>
-      </div>
-    </div>`;
   }).join('');
 
   grid.querySelectorAll('[data-open]').forEach(btn=>{
@@ -819,7 +633,6 @@ function initRealtimeListener(){
    ========================================================= */
 function tickCountdown(){
   const diff = DEADLINE.getTime() - Date.now();
-  if(diff<=0){
     document.body.classList.add('past-deadline');
     document.getElementById('cdDays').textContent='0';
     document.getElementById('cdHours').textContent='0';
@@ -845,11 +658,6 @@ const regOverlay = document.getElementById('regOverlay');
 const regBody = document.getElementById('regBody');
 
 function fieldHTML(f){
-  return `<div class="field" data-field="${f.id}">
-    <label for="f_${f.id}">${f.label} ${f.required?'<span class="req">*</span>':''}</label>
-    <input type="text" id="f_${f.id}" placeholder="${f.placeholder||''}">
-    <div class="error">กรุณากรอกข้อมูลนี้</div>
-  </div>`;
 }
 
 function openRegModal(actId){
@@ -867,62 +675,18 @@ function renderRegForm(){
   const isTeam = act.mode==='team';
   let memberRowsHTML = '';
   if(isTeam){
-    for(let i=0;i<act.teamMin;i++){
-      memberRowsHTML += `<div class="member-row"><input type="text" class="member-input" placeholder="ชื่อ-นามสกุล (พร้อมคำนำหน้า) สมาชิกคนที่ ${i+1}">${i>=act.teamMin?'<button type="button" class="rm">✕</button>':''}</div>`;
     }
   }
   regBody.innerHTML = `
-    <p class="modal-eyebrow">ลงทะเบียนแข่งขัน</p>
-    <h3>${act.name}</h3>
-    <p class="modal-sub">${act.period} · ${isTeam? `ทีมละ ${act.teamMin===act.teamMax?act.teamMin:act.teamMin+'-'+act.teamMax} คน`:'สมัครเป็นรายบุคคล'}</p>
-    <div class="form-msg" id="formMsg"></div>
-    <form id="regForm">
       ${isTeam ? `
-      <div class="field" data-field="teamName">
-        <label for="f_teamName">ชื่อทีม <span class="req">*</span></label>
-        <input type="text" id="f_teamName" placeholder="เช่น ทีมนักประดิษฐ์">
-        <div class="error">กรุณากรอกชื่อทีม</div>
-      </div>` : `
-      <div class="field" data-field="fullName">
-        <label for="f_fullName">ชื่อ-นามสกุล (พร้อมคำนำหน้า) <span class="req">*</span></label>
-        <input type="text" id="f_fullName" placeholder="เช่น ด.ช. / ด.ญ. / นาย / นางสาว ชื่อ-นามสกุล">
-        <div class="error">กรุณากรอกชื่อ-นามสกุล (พร้อมคำนำหน้า)</div>
-      </div>`}
 
-      <div class="field" data-field="grade">
-        <label for="f_grade">ระดับชั้น${isTeam?'ของทีม':''} <span class="req">*</span></label>
-        <select id="f_grade">
-          <option value="">เลือกระดับชั้น</option>
-          <option>ม.1</option><option>ม.2</option><option>ม.3</option>
-          <option>ม.4</option><option>ม.5</option><option>ม.6</option>
-        </select>
-        <div class="error">กรุณาเลือกระดับชั้น</div>
-      </div>
 
-      <div class="field" data-field="room">
-        <label for="f_room">ห้อง ${isTeam?'(เช่น 1/1, 1/2)':''} <span class="req">*</span></label>
-        <input type="text" id="f_room" placeholder="เช่น 1/1, 1/2, 4/2">
-        <div class="error">กรุณากรอกห้อง (เช่น 1/1, 1/2)</div>
-      </div>
 
       ${isTeam ? `
-      <div class="field" data-field="members">
-        <label>รายชื่อสมาชิกในทีม <span class="req">*</span></label>
-        <div class="member-rows" id="memberRows">${memberRowsHTML}</div>
-        <button type="button" class="add-member" id="addMemberBtn" ${act.teamMin>=act.teamMax?'style="display:none"':''}>+ เพิ่มสมาชิก (สูงสุด ${act.teamMax} คน)</button>
-        <div class="error">กรุณากรอกชื่อสมาชิกให้ครบ</div>
-      </div>` : ''}
 
-      <div class="field" data-field="phone">
-        <label for="f_phone">เบอร์โทรติดต่อ${isTeam?' (หัวหน้าทีม)':''} <span class="req">*</span></label>
-        <input type="tel" id="f_phone" placeholder="08xxxxxxxx">
-        <div class="error">กรุณากรอกเบอร์โทร 9-10 หลัก</div>
-      </div>
 
       ${act.extraFields.map(fieldHTML).join('')}
 
-      <button type="submit" class="btn-submit" id="submitBtn">ยืนยันการลงทะเบียน</button>
-    </form>
   `;
 
   document.getElementById('regForm').addEventListener('submit', handleSubmit);
@@ -934,8 +698,6 @@ function renderRegForm(){
       if(current>=act.teamMax) return;
       const row = document.createElement('div');
       row.className='member-row';
-      row.innerHTML = `<input type="text" class="member-input" placeholder="ชื่อ-นามสกุล (พร้อมคำนำหน้า) สมาชิกคนที่ ${current+1}"><button type="button" class="rm">✕</button>`;
-      row.querySelector('.rm').addEventListener('click', ()=>{ row.remove(); if(rows.querySelectorAll('.member-row').length<act.teamMax) addBtn.style.display=''; });
       rows.appendChild(row);
       if(rows.querySelectorAll('.member-row').length>=act.teamMax) addBtn.style.display='none';
     });
@@ -1081,42 +843,9 @@ async function handleSubmit(e){
 function showSuccess(entry, act){
   const name = entry.teamName || entry.fullName;
   regBody.innerHTML = `
-    <div class="success-view" style="text-align:center;">
-      <div class="success-icon" style="margin: 0 auto 15px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></div>
-      <h3>ลงทะเบียนสำเร็จ</h3>
-      <p style="margin-bottom:20px;">กรุณาบันทึกภาพด้านล่างไว้เป็นหลักฐาน</p>
       
-      <div id="ticketContainer" style="display:inline-block; text-align:left; background:#fff; border:2px solid #0284c7; border-radius:12px; padding:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); width:100%; max-width:320px; position:relative; overflow:hidden;">
-         <div style="position:absolute; top:-20px; right:-20px; width:60px; height:60px; background:var(--teal); transform:rotate(45deg);"></div>
-         <h4 style="color:#0f172a; font-size:16px; margin:0 0 5px 0;">Woraluck Science Fair</h4>
-         <p style="color:#64748b; font-size:12px; margin:0 0 15px 0; border-bottom:1px dashed #cbd5e1; padding-bottom:10px;">บัตรยืนยันการสมัคร / Confirmation Slip</p>
          
-         <div style="margin-bottom:10px;">
-           <span style="display:block; font-size:11px; color:#64748b; text-transform:uppercase;">กิจกรรม (Activity)</span>
-           <strong style="color:#0f172a; font-size:14px;">${act.name}</strong>
-         </div>
-         <div style="margin-bottom:10px;">
-           <span style="display:block; font-size:11px; color:#64748b; text-transform:uppercase;">ผู้สมัคร (Participant)</span>
-           <strong style="color:#0f172a; font-size:14px;">${name}</strong>
-         </div>
-         <div style="margin-bottom:10px;">
-           <span style="display:block; font-size:11px; color:#64748b; text-transform:uppercase;">เวลา (Period)</span>
-           <strong style="color:#0f172a; font-size:14px;">${act.period}</strong>
-         </div>
-         <div style="margin-bottom:15px; background:#f1f5f9; padding:8px; border-radius:6px; text-align:center;">
-           <span style="display:block; font-size:11px; color:#64748b; text-transform:uppercase;">รหัสอ้างอิง (Ref No.)</span>
-           <strong style="color:#0284c7; font-size:18px; letter-spacing:1px;">${entry.id}</strong>
-         </div>
-         <div style="text-align:center;">
-           <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${entry.id}" alt="QR" style="display:inline-block; width:120px; height:120px; border:1px solid #e2e8f0; border-radius:4px; padding:4px;">
-         </div>
-      </div>
       
-      <div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
-        <button class="btn-submit" id="downloadTicketBtn" style="flex:1;">บันทึกรูปภาพตั๋ว</button>
-        <button class="btn-secondary" id="successCloseBtn" style="flex:1;">เสร็จสิ้น</button>
-      </div>
-    </div>
   `;
   document.getElementById('successCloseBtn').addEventListener('click', closeRegModal);
   document.getElementById('downloadTicketBtn').addEventListener('click', () => {
@@ -1310,16 +1039,6 @@ adminOverlay.addEventListener('click', (e)=>{ if(e.target===adminOverlay) adminO
 
 function renderAdminGate(){
   adminBody.innerHTML = `
-    <div class="admin-pass">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
-      <h3>สำหรับครู / เจ้าหน้าที่</h3>
-      <p class="modal-sub">กรอกรหัสผ่านเพื่อดูรายชื่อผู้สมัครทั้งหมด</p>
-      <div class="field" style="width:100%;max-width:260px;">
-        <input type="password" id="adminPassInput" placeholder="รหัสผ่าน">
-        <div class="error" id="adminPassErr" style="display:none;">รหัสผ่านไม่ถูกต้อง</div>
-      </div>
-      <button class="btn-submit" id="adminUnlockBtn" style="max-width:260px;">เข้าสู่ระบบ</button>
-    </div>
   `;
   document.getElementById('adminUnlockBtn').addEventListener('click', async ()=>{
     const val = document.getElementById('adminPassInput').value;
@@ -1371,20 +1090,8 @@ function printRegistrants(actId) {
     const list = typeof sortRegistrants === 'function' ? sortRegistrants(rawList, adminSortBy) : rawList;
     const isTeam = act.mode === 'team';
     
-    let html = `<div class="print-header">รายชื่อผู้สมัคร: ${act.name}<br><span style="font-size:14pt; font-weight:normal; color:#444;">Woraluck Science Fair 2026</span></div>`;
-    html += `<table><thead><tr>
-      <th class="print-nowrap">รหัส</th>
-      <th>${isTeam?'ชื่อทีม':'ชื่อ-นามสกุล'}</th>
-      <th class="print-nowrap">ระดับชั้น</th>
-      <th class="print-nowrap">ห้อง</th>
-      ${isTeam?'<th style="width:25%">สมาชิก</th>':''}
-      <th class="print-nowrap">โทรศัพท์</th>
-      ${act.extraFields.map(f=>`<th>${f.label}</th>`).join('')}
-      <th class="print-nowrap">เวลาสมัคร</th>
-    </tr></thead><tbody>`;
     
     if (list.length === 0) {
-      html += `<tr><td colspan="${6 + act.extraFields.length}" style="text-align:center;">ยังไม่มีผู้สมัครในกิจกรรมนี้</td></tr>`;
     } else {
       list.forEach(r => {
         let timeStr = '';
@@ -1392,19 +1099,8 @@ function printRegistrants(actId) {
         let membersStr = '';
         if (isTeam && Array.isArray(r.members)) membersStr = r.members.join(', ');
         
-        html += `<tr>
-          <td class="print-nowrap">${r.id}</td>
-          <td><strong>${isTeam ? r.teamName : r.fullName}</strong></td>
-          <td class="print-nowrap">${r.grade||''}</td>
-          <td class="print-nowrap">${r.room||''}</td>
-          ${isTeam ? `<td>${membersStr}</td>` : ''}
-          <td class="print-nowrap">${r.phone||''}</td>
-          ${act.extraFields.map(f=>`<td>${r[f.id]||''}</td>`).join('')}
-          <td class="print-nowrap">${timeStr}</td>
-        </tr>`;
       });
     }
-    html += `</tbody></table>`;
     
     const printSection = document.getElementById('printSection');
     if (printSection) {
@@ -1426,10 +1122,10 @@ function printRegistrants(actId) {
   }
 }
 function exportCSV(actId){
-  try {
-    const act = ACTIVITIES.find(a=>a.id===actId);
-    if (!act) return;
-    const rawList = adminLists[actId] || [];
+
+
+  const act = ACTIVITIES.find(a=>a.id===actId);
+  const rawList = adminLists[actId] || [];
   const list = typeof sortRegistrants === 'function' ? sortRegistrants(rawList, adminSortBy) : rawList;
   const isTeam = act.mode === 'team';
   const cols = isTeam
@@ -1464,15 +1160,11 @@ function exportCSV(actId){
     }).join(','));
   });
   const blob = new Blob(['\uFEFF'+rows.join('\n')], {type:'text/csv;charset=utf-8;'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = act.id+'-registrants.csv';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  } catch (e) {
-    console.error("Error exporting CSV:", e);
-    alert("เกิดข้อผิดพลาดในการส่งออก CSV");
-  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = act.id+'-registrants.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function showConfirmModal({ title, message, confirmText = 'ยืนยัน', requirePin = false, onConfirm }) {
@@ -1488,26 +1180,11 @@ function showConfirmModal({ title, message, confirmText = 'ยืนยัน', 
   let pinHtml = '';
   if (requirePin) {
     pinHtml = `
-      <div style="margin-bottom:16px;">
-        <input type="text" id="confirmPinInput" placeholder="กรุณาใส่รหัสเพื่อยืนยัน" style="width:100%; padding:10px 14px; border:1px solid var(--border); background:rgba(255,255,255,0.03); color:#fff; border-radius:6px; font-size:14px; text-align:center;">
-        <div id="confirmPinError" style="color:var(--danger); font-size:12px; margin-top:6px; display:none;">รหัสผ่านไม่ถูกต้อง</div>
-      </div>
     `;
   }
   
   confirmOverlay.innerHTML = `
-    <div class="modal" style="max-width:380px; text-align:center; padding:24px 20px;">
-      <div style="width:48px; height:48px; border-radius:50%; background:rgba(255,107,107,0.15); color:var(--danger); display:flex; align-items:center; justify-content:center; margin:0 auto 12px auto;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
-      </div>
-      <h3 style="font-size:17px; font-weight:600; margin-bottom:8px; color:var(--text);">${title}</h3>
-      <p style="font-size:13.5px; color:var(--text-mute); margin-bottom:20px; line-height:1.5;">${message}</p>
       ${pinHtml}
-      <div style="display:flex; gap:10px; justify-content:center;">
-        <button id="confirmCancelBtn" class="btn-tiny" style="padding:8px 18px; font-size:13px; cursor:pointer;">ยกเลิก</button>
-        <button id="confirmOkBtn" class="btn-tiny danger" style="padding:8px 18px; font-size:13px; background:var(--danger); color:#fff; border:none; cursor:pointer;">${confirmText}</button>
-      </div>
-    </div>
   `;
   confirmOverlay.classList.add('open');
 
@@ -1647,12 +1324,9 @@ function getSortIndicator(col) {
     if (adminSortBy === 'time-asc') return ' ▲';
     if (adminSortBy === 'time-desc') return ' ▼';
   }
-  return ' <span style="opacity:0.35; font-size:10px;">↕</span>';
 }
 
 function renderAdminPanel(){
-  let tabsHTML = `<button class="admin-tab ${adminActiveTab==='dashboard'?'active':''}" data-tab="dashboard">ภาพรวม (Dashboard)</button>`;
-  tabsHTML += ACTIVITIES.map(a=>`<button class="admin-tab ${a.id===adminActiveTab?'active':''}" data-tab="${a.id}">${a.name}</button>`).join('');
 
   if (adminActiveTab === 'dashboard') {
      let dashboardCards = ACTIVITIES.map(act => {
@@ -1663,16 +1337,6 @@ function renderAdminPanel(){
         else if (pct >= 80) color = '#f59e0b'; // Orange
         
         return `
-          <div style="background:var(--bg-2); border:1px solid var(--border-strong); border-radius:12px; padding:16px;">
-            <h4 style="margin:0 0 10px 0; font-size:15px;">${act.name}</h4>
-            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:var(--text-mute);">
-              <span>รับ ${act.maxSeats} ${act.unit}</span>
-              <span style="color:${color}; font-weight:600;">สมัครแล้ว ${count}</span>
-            </div>
-            <div style="width:100%; background:var(--bg); border-radius:4px; height:8px; overflow:hidden;">
-              <div style="height:100%; width:${pct}%; background:${color};"></div>
-            </div>
-          </div>
         `;
      }).join('');
 
@@ -1719,53 +1383,18 @@ function renderAdminPanel(){
      roomStatsArr.sort((a,b) => b.total - a.total);
      let roomCardsHTML = roomStatsArr.length > 0 
        ? roomStatsArr.map(r => `
-          <div style="background:var(--bg-2); border:1px solid var(--border-strong); border-radius:10px; padding:12px 16px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:8px;">
-              <span style="font-weight:600; font-size:14px;">${r.room}</span>
-              <span style="background:var(--primary); color:#fff; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;">${r.total} คน</span>
-            </div>
-            <div style="font-size:12px; color:var(--text-dim); display:flex; flex-direction:column; gap:8px;">
               ${Object.entries(r.activities).map(([actId, data]) => {
                  const actName = ACTIVITIES.find(a => a.id === actId)?.name || actId;
-                 return '<div style="border-bottom:1px dashed var(--border); padding-bottom:6px;">' +
-                        '<div style="display:flex; justify-content:space-between; color:var(--text); font-weight:600; margin-bottom:4px;">' +
-                        '<span>' + actName + '</span>' +
-                        '<span>' + data.count + ' คน</span>' +
-                        '</div>' +
-                        '<ul style="margin:0; padding-left:16px; color:var(--text-mute); list-style-type:circle;">' +
-                        data.items.map(item => '<li style="padding-bottom:2px;">' + item + '</li>').join('') +
-                        '</ul>' +
-                        '</div>';
               }).join('')}
-            </div>
-          </div>
          `).join('')
-       : '<div style="color:var(--text-mute); font-size:13px; grid-column: 1 / -1;">ยังไม่มีข้อมูล</div>';
 
      adminBody.innerHTML = `
-      <div class="print-header">สรุปภาพรวมผู้สมัคร<br><span style="font-size:14pt; font-weight:normal; color:#444;">Woraluck Science Fair 2026</span></div>
-      <p class="modal-eyebrow">แผงควบคุมสำหรับเจ้าหน้าที่</p>
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3>ภาพรวมการสมัคร (Dashboard)</h3>
-      </div>
-      <div class="admin-tabs">
         ${tabsHTML}
-      </div>
       
-      <div style="margin-bottom:20px; padding:16px; background:var(--bg-2); border:1px solid var(--gold); border-radius:12px;">
-        <h4 style="margin:0 0 5px 0; color:var(--gold);">🌟 กิจกรรมที่ได้รับความสนใจมากที่สุด</h4>
-        <p style="margin:0; font-size:14px;"><strong>${popularAct.name}</strong> (สมัครแล้ว ${popularAct.count} ${popularAct.unit})</p>
-      </div>
 
-      <h4 style="margin:0 0 12px 0; font-size:16px;">สถิติผู้สมัครแยกตามห้อง</h4>
-      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin-bottom:24px;">
         ${roomCardsHTML}
-      </div>
       
-      <h4 style="margin:0 0 12px 0; font-size:16px;">สถิติแยกตามกิจกรรม</h4>
-      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:16px;">
         ${dashboardCards}
-      </div>
      `;
   } else {
     const act = ACTIVITIES.find(a=>a.id===adminActiveTab);
@@ -1789,68 +1418,7 @@ function renderAdminPanel(){
     filteredList = sortRegistrants(filteredList, adminSortBy);
 
     adminBody.innerHTML = `
-      <div class="print-header">รายชื่อผู้สมัคร: ${act.name}<br><span style="font-size:14pt; font-weight:normal; color:#444;">Woraluck Science Fair 2026</span></div>
-      <p class="modal-eyebrow">แผงควบคุมสำหรับเจ้าหน้าที่</p>
-      <h3>รายชื่อผู้สมัคร</h3>
-      <div class="admin-tabs">
         ${tabsHTML}
-      </div>
-      <div class="admin-toolbar">
-        <span class="count">สมัครแล้ว <strong>${list.length}</strong> / ${act.maxSeats} ${act.unit}</span>
-        <div class="admin-btns">
-          <button class="btn-tiny" id="exportBtn">ส่งออก CSV</button>
-          <button class="btn-tiny" id="printBtn">พิมพ์รายชื่อ</button>
-          <button class="btn-tiny danger" id="resetBtn">ล้างรายชื่อทั้งหมด</button>
-        </div>
-      </div>
-      <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
-        <div style="flex:1; min-width:180px;">
-          <input type="text" id="adminSearchInput" placeholder="🔍 ค้นหาชื่อ, รหัส, ห้อง..." value="${adminSearchQuery}" style="width:100%; background:var(--bg); border:1px solid var(--border-strong); color:var(--text); border-radius:var(--radius-sm); padding:8px 12px; font-size:13px;">
-        </div>
-        <div style="display:flex; align-items:center; gap:6px;">
-          <label for="adminSortSelect" style="font-size:12.5px; color:var(--text-mute); white-space:nowrap;">เรียงตาม:</label>
-        <select id="adminSortSelect" style="background:var(--bg); border:1px solid var(--border-strong); color:var(--text); border-radius:var(--radius-sm); padding:8px 10px; font-size:12.5px; cursor:pointer;">
-          <option value="time-asc" ${adminSortBy==='time-asc'?'selected':''}>⏰ เวลาสมัคร (เก่า → ใหม่)</option>
-          <option value="time-desc" ${adminSortBy==='time-desc'?'selected':''}>⏰ เวลาสมัคร (ใหม่ → เก่า)</option>
-          <option value="room-asc" ${adminSortBy==='room-asc'?'selected':''}>🏫 ห้องเรียน (น้อย → มาก)</option>
-          <option value="room-desc" ${adminSortBy==='room-desc'?'selected':''}>🏫 ห้องเรียน (มาก → น้อย)</option>
-          <option value="grade-asc" ${adminSortBy==='grade-asc'?'selected':''}>🎓 ระดับชั้น</option>
-          <option value="name-asc" ${adminSortBy==='name-asc'?'selected':''}>👤 ชื่อ-นามสกุล / ทีม (ก-ฮ)</option>
-          <option value="id-asc" ${adminSortBy==='id-asc'?'selected':''}>🆔 รหัสผู้สมัคร</option>
-        </select>
-      </div>
-    </div>
-    <div class="admin-table-wrap">
-      ${filteredList.length===0 ? '<div class="admin-empty">' + (list.length === 0 ? 'ยังไม่มีผู้สมัครในกิจกรรมนี้' : 'ไม่พบรายชื่อที่ค้นหา') + '</div>' : `
-      <table>
-        <thead><tr>
-          <th data-sort-col="id" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">รหัส${getSortIndicator('id')}</th>
-          <th data-sort-col="name" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">${isTeam?'ชื่อทีม':'ชื่อ-นามสกุล'}${getSortIndicator('name')}</th>
-          <th data-sort-col="grade" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">ระดับชั้น${getSortIndicator('grade')}</th>
-          <th data-sort-col="room" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">ห้อง${getSortIndicator('room')}</th>
-          ${isTeam?'<th>สมาชิก</th>':''}
-          <th>โทรศัพท์</th>
-          ${act.extraFields.map(f=>`<th>${f.label}</th>`).join('')}
-          <th data-sort-col="time" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">เวลาสมัคร${getSortIndicator('time')}</th>
-          <th style="text-align:center;">จัดการ</th>
-        </tr></thead>
-        <tbody>
-          ${filteredList.map(r=>`<tr>
-            <td>${r.id}</td>
-            <td><strong>${isTeam? r.teamName : r.fullName}</strong></td>
-            <td>${r.grade||''}</td>
-            <td>${r.room||''}</td>
-            ${isTeam?`<td>${(r.members||[]).join(', ')}</td>`:''}
-            <td>${r.phone||''}</td>
-            ${act.extraFields.map(f=>`<td>${r[f.id]||''}</td>`).join('')}
-            <td>${new Date(r.timestamp).toLocaleString('th-TH')}</td>
-            <td style="text-align:center;">
-              <button class="btn-del-item" data-del-id="${r.id}">ลบ</button>
-            </td>
-          </tr>`).join('')}
-        </tbody>
-      </table>`}
-    </div>
   `;
   } // END OF ELSE BLOCK
 
@@ -1944,12 +1512,10 @@ document.getElementById('statusSearchBtn').addEventListener('click', async () =>
   searchBtn.textContent = 'กำลังค้นหา...';
   
   statusResult.style.display = 'block';
-  statusResult.innerHTML = '<p style="text-align:center; color:var(--text-dim);">กำลังตรวจสอบ...</p>';
   
   try {
     const res = await fetch(`/api/status/${regId}`);
     if (!res.ok) {
-       statusResult.innerHTML = '<div class="form-msg error show" style="margin:0;">ไม่พบข้อมูลการสมัครสำหรับรหัสอ้างอิงนี้</div>';
        searchBtn.disabled = false;
        searchBtn.textContent = 'ค้นหาข้อมูล';
        return;
@@ -1960,20 +1526,12 @@ document.getElementById('statusSearchBtn').addEventListener('click', async () =>
     const foundAct = ACTIVITIES.find(a => a.id === data.foundActId);
     
     if(!found){
-      statusResult.innerHTML = '<div class="form-msg error show" style="margin:0;">ไม่พบข้อมูลการสมัครสำหรับรหัสอ้างอิงนี้</div>';
       searchBtn.disabled = false;
       searchBtn.textContent = 'ค้นหาข้อมูล';
       return;
     }
     
     statusResult.innerHTML = `
-      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:15px; margin-bottom:15px;">
-        <h4 style="margin:0 0 10px 0; color:#0f172a;">สถานะ: <span style="color:var(--teal);">ลงทะเบียนเรียบร้อย</span></h4>
-        <p style="margin:0 0 6px 0; color:#475569; font-size:14px;"><strong>กิจกรรม:</strong> ${foundAct.name}</p>
-        <p style="margin:0 0 6px 0; color:#475569; font-size:14px;"><strong>ผู้สมัคร:</strong> ${found.teamName || found.fullName}</p>
-        <p style="margin:0; color:#475569; font-size:14px;"><strong>เวลาสมัคร:</strong> ${new Date(found.timestamp).toLocaleString('th-TH')}</p>
-      </div>
-      <button class="btn-submit danger" id="statusCancelBtn" style="background:var(--danger);">ยกเลิกการสมัคร (สละสิทธิ์)</button>
     `;
     
     document.getElementById('statusCancelBtn').addEventListener('click', () => {
@@ -1995,17 +1553,11 @@ document.getElementById('statusSearchBtn').addEventListener('click', async () =>
              if (cancelRes.ok) {
                 fetchCounts();
                 statusResult.innerHTML = `
-                  <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:20px; text-align:center;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" width="40" height="40" style="margin-bottom:10px;"><path d="M20 6L9 17l-5-5"/></svg>
-                    <h4 style="color:#065f46; margin:0 0 5px 0;">ยกเลิกการสมัครเรียบร้อยแล้ว</h4>
-                    <p style="color:#047857; margin:0; font-size:14px;">ขอบคุณที่แจ้งสละสิทธิ์เพื่อคืนที่นั่งให้เพื่อนๆ</p>
-                  </div>
                 `;
              } else {
                 throw new Error("Failed");
              }
            } catch(e) {
-              statusResult.innerHTML = '<div class="form-msg error show" style="margin:0;">เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง</div>';
               cancelBtn.disabled = false;
               cancelBtn.textContent = 'ยกเลิกการสมัคร (สละสิทธิ์)';
            }
@@ -2014,7 +1566,6 @@ document.getElementById('statusSearchBtn').addEventListener('click', async () =>
     });
     
   } catch(e) {
-    statusResult.innerHTML = '<div class="form-msg error show" style="margin:0;">เกิดข้อผิดพลาดในการเชื่อมต่อ</div>';
   }
   
   searchBtn.disabled = false;
@@ -2029,6 +1580,3 @@ loadAll().then(() => {
 });
 tickCountdown();
 setInterval(tickCountdown, 1000);
-</script>
-</body>
-</html>
