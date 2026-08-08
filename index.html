@@ -1359,7 +1359,6 @@ function renderAdminGate(){
 
 function csvEscape(v){ if(v==null) return ''; const s=String(v).replace(/"/g,'""'); return `"${s}"`; }
 
-function exportCSV(actId){
 
 function printRegistrants(actId) {
   const act = ACTIVITIES.find(a=>a.id===actId);
@@ -1411,6 +1410,8 @@ function printRegistrants(actId) {
     window.print(); // fallback
   }
 }
+function exportCSV(actId){
+
 
   const act = ACTIVITIES.find(a=>a.id===actId);
   const rawList = adminLists[actId] || [];
