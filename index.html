@@ -480,9 +480,12 @@ body {
   tr { page-break-inside: avoid; page-break-after: auto; }
   th, td { border: 1px solid #000 !important; padding: 8px !important; font-size: 12pt !important; color: #000 !important; text-align: left; background: none !important; }
   
-  .admin-modal::before {
-    content: "สรุปรายชื่อผู้สมัคร Woraluck Science Fair 2026";
-    display: block;
+  .print-header { display: none; }
+}
+
+@media print {
+  .print-header {
+    display: block !important;
     font-size: 18pt;
     font-weight: bold;
     text-align: center;
@@ -1666,6 +1669,7 @@ function renderAdminPanel(){
        : '<div style="color:var(--text-mute); font-size:13px; grid-column: 1 / -1;">ยังไม่มีข้อมูล</div>';
 
      adminBody.innerHTML = `
+      <div class="print-header">สรุปภาพรวมผู้สมัคร<br><span style="font-size:14pt; font-weight:normal; color:#444;">Woraluck Science Fair 2026</span></div>
       <p class="modal-eyebrow">แผงควบคุมสำหรับเจ้าหน้าที่</p>
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <h3>ภาพรวมการสมัคร (Dashboard)</h3>
@@ -1711,6 +1715,7 @@ function renderAdminPanel(){
     filteredList = sortRegistrants(filteredList, adminSortBy);
 
     adminBody.innerHTML = `
+      <div class="print-header">รายชื่อผู้สมัคร: ${act.name}<br><span style="font-size:14pt; font-weight:normal; color:#444;">Woraluck Science Fair 2026</span></div>
       <p class="modal-eyebrow">แผงควบคุมสำหรับเจ้าหน้าที่</p>
       <h3>รายชื่อผู้สมัคร</h3>
       <div class="admin-tabs">
