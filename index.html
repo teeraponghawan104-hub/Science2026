@@ -680,7 +680,7 @@ const ACTIVITIES = [
     period:'ช่วงบ่าย (เดินแบบบนเวที)',
     icon:'recycle',
     details:['ธีม: นวัตกรรมแห่งโลกอนาคต พร้อมนวัตกรรม 1 อย่าง เช่น หน้ากากไซเบอร์กรองอากาศ, แว่นตาโฮโลแกรม, กล่องควบคุมสภาพอากาศ','ผู้เข้าแข่งขันต้องนำเสนอและอธิบายแนวคิดของชุดที่ประดิษฐ์ได้'],
-    extraFields:[{id:'innovation', label:'นวัตกรรมที่นำเสนอในชุด', placeholder:'เช่น หน้ากากกรองอากาศ, แว่นตาโฮโลแกรม', required:true}]
+    extraFields:[{id:'costumeName', label:'ชื่อชุด', placeholder:'ระบุชื่อชุด', required:true}, {id:'innovation', label:'นวัตกรรมที่นำเสนอในชุด', placeholder:'เช่น หน้ากากกรองอากาศ, แว่นตาโฮโลแกรม', required:true}]
   },
   {
     id:'show', name:'Science Show', mode:'team', unit:'ทีม', maxSeats:12,
@@ -688,7 +688,7 @@ const ACTIVITIES = [
     period:'ช่วงบ่าย',
     icon:'flask',
     details:['นำเสนอได้ 1 การทดลองต่อทีม','จำกัดเวลาการแสดงไม่เกิน 10 นาทีต่อทีม'],
-    extraFields:[{id:'experiment', label:'ชื่อการทดลองที่นำเสนอ', placeholder:'เช่น ภูเขาไฟจำลอง', required:true}]
+    extraFields:[{id:'showName', label:'ชื่อชุดการแสดง', placeholder:'ระบุชื่อชุดการแสดง', required:true}, {id:'experiment', label:'ชื่อการทดลองที่นำเสนอ', placeholder:'เช่น ภูเขาไฟจำลอง', required:true}]
   }
 ];
 
