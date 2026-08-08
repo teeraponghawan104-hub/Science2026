@@ -1316,7 +1316,7 @@ function exportCSV(actId){
   URL.revokeObjectURL(url);
 }
 
-function showConfirmModal({ title, message, confirmText = 'ยืนยัน', onConfirm }) {
+function showConfirmModal({ title, message, confirmText = 'ยืนยัน', requirePin = false, onConfirm }) {
   let confirmOverlay = document.getElementById('confirmOverlay');
   if(!confirmOverlay) {
     confirmOverlay = document.createElement('div');
@@ -1325,6 +1325,17 @@ function showConfirmModal({ title, message, confirmText = 'ยืนยัน', 
     confirmOverlay.style.zIndex = '1000';
     document.body.appendChild(confirmOverlay);
   }
+  
+  let pinHtml = '';
+  if (requirePin) {
+    pinHtml = `
+      <div style="margin-bottom:16px;">
+        <input type="text" id="confirmPinInput" placeholder="กรุณาใส่รหัส ${requirePin} เพื่อยืนยัน" style="width:100%; padding:10px 14px; border:1px solid var(--border); background:rgba(255,255,255,0.03); color:#fff; border-radius:6px; font-size:14px; text-align:center;">
+        <div id="confirmPinError" style="color:var(--danger); font-size:12px; margin-top:6px; display:none;">รหัสผ่านไม่ถูกต้อง</div>
+      </div>
+    `;
+  }
+  
   confirmOverlay.innerHTML = `
     <div class="modal" style="max-width:380px; text-align:center; padding:24px 20px;">
       <div style="width:48px; height:48px; border-radius:50%; background:rgba(255,107,107,0.15); color:var(--danger); display:flex; align-items:center; justify-content:center; margin:0 auto 12px auto;">
@@ -1332,6 +1343,7 @@ function showConfirmModal({ title, message, confirmText = 'ยืนยัน', 
       </div>
       <h3 style="font-size:17px; font-weight:600; margin-bottom:8px; color:var(--text);">${title}</h3>
       <p style="font-size:13.5px; color:var(--text-mute); margin-bottom:20px; line-height:1.5;">${message}</p>
+      ${pinHtml}
       <div style="display:flex; gap:10px; justify-content:center;">
         <button id="confirmCancelBtn" class="btn-tiny" style="padding:8px 18px; font-size:13px; cursor:pointer;">ยกเลิก</button>
         <button id="confirmOkBtn" class="btn-tiny danger" style="padding:8px 18px; font-size:13px; background:var(--danger); color:#fff; border:none; cursor:pointer;">${confirmText}</button>
@@ -1346,6 +1358,13 @@ function showConfirmModal({ title, message, confirmText = 'ยืนยัน', 
 
   document.getElementById('confirmCancelBtn').onclick = close;
   document.getElementById('confirmOkBtn').onclick = async () => {
+    if (requirePin) {
+      const pinVal = document.getElementById('confirmPinInput').value;
+      if (pinVal !== requirePin) {
+        document.getElementById('confirmPinError').style.display = 'block';
+        return;
+      }
+    }
     close();
     await onConfirm();
   };
@@ -1357,6 +1376,7 @@ async function resetActivity(actId){
     title: 'ยืนยันล้างรายชื่อทั้งหมด',
     message: `คุณต้องการล้างรายชื่อผู้สมัครทั้งหมดของกิจกรรม "${act.name}" ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้`,
     confirmText: 'ล้างทั้งหมด',
+    requirePin: '112003',
     onConfirm: async () => {
       try {
         await fetch('/api/admin/reset', {
@@ -1386,6 +1406,7 @@ function deleteSingleRegistrant(actId, regId){
     title: 'ยืนยันการลบผู้สมัคร',
     message: `คุณต้องการลบผู้สมัคร "${targetName}" (${regId}) ออกจากกิจกรรม ${act.name} ใช่หรือไม่?`,
     confirmText: 'ลบรายชื่อ',
+    requirePin: '112003',
     onConfirm: async () => {
       try {
         await fetch('/api/cancel', {
