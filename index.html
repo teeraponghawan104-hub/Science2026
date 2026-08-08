@@ -461,24 +461,32 @@ body {
 }
 
 @media print {
-  body * { visibility: hidden; }
-  #adminOverlay, #adminOverlay * { visibility: visible; }
-  #adminOverlay { position: absolute; left: 0; top: 0; right: 0; background: none; overflow: visible; padding: 0; }
-  .admin-panel { margin: 0; max-width: 100%; box-shadow: none; border: none; width: 100%; padding: 0; }
-  .admin-btns, .modal-close, .admin-pass, .admin-tabs, #adminSearchInput, #adminSortSelect, .btn-del-item, th:last-child, td:last-child { display: none !important; }
+  @page { size: A4 portrait; margin: 15mm; }
+  body { background: #fff !important; color: #000 !important; margin: 0; padding: 0; height: auto; overflow: visible; }
+  
+  .nav, .hero, .container, footer, #regOverlay { display: none !important; }
+  
+  #adminOverlay { display: block !important; position: static !important; background: none !important; opacity: 1 !important; visibility: visible !important; height: auto !important; min-height: 0 !important; padding: 0 !important; overflow: visible !important; }
+  
+  .modal, .admin-modal { position: static !important; max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; background: none !important; transform: none !important; overflow: visible !important; height: auto !important; }
+
+  .admin-table-wrap { max-height: none !important; height: auto !important; overflow: visible !important; border: none !important; margin: 0 !important; padding: 0 !important; }
+
+  .admin-btns, .modal-close, .admin-pass, .admin-tabs, #adminSearchInput, #adminSortSelect, label[for="adminSortSelect"], .btn-del-item, th:last-child, td:last-child, .modal-eyebrow { display: none !important; }
+  
   th[data-sort-col] { pointer-events: none; }
-  .table-wrap { max-height: none; overflow: visible; border: none; box-shadow: none; }
-  table { border-collapse: collapse; width: 100%; }
-  th, td { border: 1px solid #ccc; padding: 6px; font-size: 11pt; color: #000; text-align: left; }
-  .admin-header p { display: none; }
-  /* Show the active tab title as the main heading when printing */
-  .admin-panel::before {
-    content: "สรุปรายชื่อผู้สมัคร";
+  
+  table { border-collapse: collapse !important; width: 100% !important; page-break-inside: auto; margin-top: 20px; }
+  tr { page-break-inside: avoid; page-break-after: auto; }
+  th, td { border: 1px solid #000 !important; padding: 8px !important; font-size: 12pt !important; color: #000 !important; text-align: left; background: none !important; }
+  
+  .admin-modal::before {
+    content: "สรุปรายชื่อผู้สมัคร Woraluck Science Fair 2026";
     display: block;
     font-size: 18pt;
     font-weight: bold;
     text-align: center;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     color: #000;
   }
 }
@@ -1617,6 +1625,26 @@ function renderAdminPanel(){
      sortedActs.sort((a,b) => b.count - a.count);
      let popularAct = sortedActs[0];
 
+     // Calculate grade statistics
+     let gradeStats = {};
+     Object.values(adminLists).forEach(list => {
+       list.forEach(r => {
+         const grade = (r.grade || 'ไม่ระบุ').trim();
+         if (!gradeStats[grade]) gradeStats[grade] = 0;
+         gradeStats[grade]++;
+       });
+     });
+     let gradeStatsArr = Object.keys(gradeStats).map(grade => ({ grade, count: gradeStats[grade] }));
+     gradeStatsArr.sort((a,b) => b.count - a.count);
+     let gradeCardsHTML = gradeStatsArr.length > 0 
+       ? gradeStatsArr.map(g => `
+          <div style="background:var(--bg-2); border:1px solid var(--border-strong); border-radius:10px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:600; font-size:14px;">${g.grade}</span>
+            <span style="background:var(--primary); color:#fff; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;">${g.count} รายการ</span>
+          </div>
+         `).join('')
+       : '<div style="color:var(--text-mute); font-size:13px; grid-column: 1 / -1;">ยังไม่มีข้อมูล</div>';
+
      adminBody.innerHTML = `
       <p class="modal-eyebrow">แผงควบคุมสำหรับเจ้าหน้าที่</p>
       <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1630,7 +1658,13 @@ function renderAdminPanel(){
         <h4 style="margin:0 0 5px 0; color:var(--gold);">🌟 กิจกรรมที่ได้รับความสนใจมากที่สุด</h4>
         <p style="margin:0; font-size:14px;"><strong>${popularAct.name}</strong> (สมัครแล้ว ${popularAct.count} ${popularAct.unit})</p>
       </div>
+
+      <h4 style="margin:0 0 12px 0; font-size:16px;">สถิติผู้สมัครแยกตามระดับชั้น</h4>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin-bottom:24px;">
+        ${gradeCardsHTML}
+      </div>
       
+      <h4 style="margin:0 0 12px 0; font-size:16px;">สถิติแยกตามกิจกรรม</h4>
       <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:16px;">
         ${dashboardCards}
       </div>
