@@ -1625,22 +1625,42 @@ function renderAdminPanel(){
      sortedActs.sort((a,b) => b.count - a.count);
      let popularAct = sortedActs[0];
 
-     // Calculate grade statistics
-     let gradeStats = {};
-     Object.values(adminLists).forEach(list => {
+     // Calculate room statistics
+     let roomStats = {};
+     Object.entries(adminLists).forEach(([actId, list]) => {
        list.forEach(r => {
          const grade = (r.grade || 'ไม่ระบุ').trim();
-         if (!gradeStats[grade]) gradeStats[grade] = 0;
-         gradeStats[grade]++;
+         const roomNum = (r.room || '-').trim();
+         let fullRoom = 'ไม่ระบุ';
+         if (grade !== 'ไม่ระบุ') {
+           const gNum = grade.replace('ม.', '');
+           if (roomNum.includes('/')) {
+             fullRoom = roomNum.startsWith('ม.') ? roomNum : 'ม.' + roomNum;
+           } else {
+             fullRoom = 'ม.' + gNum + '/' + roomNum;
+           }
+         }
+         if (!roomStats[fullRoom]) roomStats[fullRoom] = { total: 0, activities: {} };
+         roomStats[fullRoom].total++;
+         if (!roomStats[fullRoom].activities[actId]) roomStats[fullRoom].activities[actId] = 0;
+         roomStats[fullRoom].activities[actId]++;
        });
      });
-     let gradeStatsArr = Object.keys(gradeStats).map(grade => ({ grade, count: gradeStats[grade] }));
-     gradeStatsArr.sort((a,b) => b.count - a.count);
-     let gradeCardsHTML = gradeStatsArr.length > 0 
-       ? gradeStatsArr.map(g => `
-          <div style="background:var(--bg-2); border:1px solid var(--border-strong); border-radius:10px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-weight:600; font-size:14px;">${g.grade}</span>
-            <span style="background:var(--primary); color:#fff; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;">${g.count} รายการ</span>
+     let roomStatsArr = Object.keys(roomStats).map(room => ({ room, total: roomStats[room].total, activities: roomStats[room].activities }));
+     roomStatsArr.sort((a,b) => b.total - a.total);
+     let roomCardsHTML = roomStatsArr.length > 0 
+       ? roomStatsArr.map(r => `
+          <div style="background:var(--bg-2); border:1px solid var(--border-strong); border-radius:10px; padding:12px 16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:8px; margin-bottom:8px;">
+              <span style="font-weight:600; font-size:14px;">${r.room}</span>
+              <span style="background:var(--primary); color:#fff; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:600;">${r.total} รายการ</span>
+            </div>
+            <div style="font-size:12px; color:var(--text-dim); display:flex; flex-direction:column; gap:4px;">
+              ${Object.entries(r.activities).map(([actId, count]) => {
+                 const actName = ACTIVITIES.find(a => a.id === actId)?.name || actId;
+                 return '<div style="display:flex; justify-content:space-between;"><span>' + actName + '</span><span>' + count + '</span></div>';
+              }).join('')}
+            </div>
           </div>
          `).join('')
        : '<div style="color:var(--text-mute); font-size:13px; grid-column: 1 / -1;">ยังไม่มีข้อมูล</div>';
@@ -1659,9 +1679,9 @@ function renderAdminPanel(){
         <p style="margin:0; font-size:14px;"><strong>${popularAct.name}</strong> (สมัครแล้ว ${popularAct.count} ${popularAct.unit})</p>
       </div>
 
-      <h4 style="margin:0 0 12px 0; font-size:16px;">สถิติผู้สมัครแยกตามระดับชั้น</h4>
+      <h4 style="margin:0 0 12px 0; font-size:16px;">สถิติผู้สมัครแยกตามห้อง</h4>
       <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin-bottom:24px;">
-        ${gradeCardsHTML}
+        ${roomCardsHTML}
       </div>
       
       <h4 style="margin:0 0 12px 0; font-size:16px;">สถิติแยกตามกิจกรรม</h4>
