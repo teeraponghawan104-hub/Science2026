@@ -421,7 +421,10 @@ td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim);
       <img src="/123.png" alt="โลโก้โรงเรียน" class="mark" />
       <span class="label">โรงเรียนวรคุณอุปถัมภ์ · <strong>สัปดาห์วันวิทยาศาสตร์</strong></span>
     </div>
-    <a href="#activities" class="nav-cta">สมัครแข่งขัน</a>
+    <div style="display:flex; gap:10px;">
+      <a href="javascript:void(0)" class="nav-cta" style="background:#f1f5f9; color:#475569;" id="openStatusBtn">ตรวจสอบ/ยกเลิก</a>
+      <a href="#activities" class="nav-cta">สมัครแข่งขัน</a>
+    </div>
   </div>
 </nav>
 
@@ -507,6 +510,28 @@ td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim);
 </footer>
 
 <!-- Registration Modal -->
+<div class="overlay" id="statusOverlay">
+  <div class="modal" id="statusModal" role="dialog" aria-modal="true" style="max-width:440px;">
+    <button class="modal-close" id="statusCloseBtn" aria-label="ปิด">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="modal-header" style="text-align:center;">
+      <div class="modal-icon" style="margin:0 auto 10px; background:#f1f5f9; color:#0284c7; width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="24" height="24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+      <h2 style="font-size:20px; font-weight:700;">ตรวจสอบ / ยกเลิกการสมัคร</h2>
+      <p style="color:var(--text-dim); margin-top:6px; font-size:14px;">กรอกรหัสอ้างอิงของคุณเพื่อดูสถานะหรือสละสิทธิ์</p>
+    </div>
+    <div class="modal-body" style="padding:0;">
+      <div class="field">
+        <input type="text" id="statusRegId" placeholder="รหัสอ้างอิง (เช่น ROC-123ABCD)" style="text-transform: uppercase;">
+      </div>
+      <button class="btn-submit" id="statusSearchBtn" style="margin-top:10px;">ค้นหาข้อมูล</button>
+      <div id="statusResult" style="margin-top:20px; display:none;"></div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="regOverlay">
   <div class="modal" id="regModal" role="dialog" aria-modal="true">
     <button class="modal-close" id="regCloseBtn" aria-label="ปิด">
@@ -1021,19 +1046,147 @@ async function handleSubmit(e){
 }
 
 function showSuccess(entry, act){
+  const name = entry.teamName || entry.fullName;
   regBody.innerHTML = `
-    <div class="success-view">
-      <div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></div>
+    <div class="success-view" style="text-align:center;">
+      <div class="success-icon" style="margin: 0 auto 15px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></div>
       <h3>ลงทะเบียนสำเร็จ</h3>
-      <p>${act.name} · ${entry.teamName || entry.fullName}</p>
-      <p>กรุณาจดรหัสการสมัครไว้เป็นหลักฐาน</p>
-      <div class="success-code">${entry.id}</div>
-      <br>
-      <button class="btn-secondary" id="successCloseBtn">เสร็จสิ้น</button>
+      <p style="margin-bottom:20px;">กรุณาบันทึกภาพด้านล่างไว้เป็นหลักฐาน</p>
+      
+      <div id="ticketContainer" style="display:inline-block; text-align:left; background:#fff; border:2px solid #0284c7; border-radius:12px; padding:20px; box-shadow:0 10px 25px rgba(0,0,0,0.1); width:100%; max-width:320px; position:relative; overflow:hidden;">
+         <div style="position:absolute; top:-20px; right:-20px; width:60px; height:60px; background:var(--teal); transform:rotate(45deg);"></div>
+         <h4 style="color:#0f172a; font-size:16px; margin:0 0 5px 0;">Woraluck Science Fair</h4>
+         <p style="color:#64748b; font-size:12px; margin:0 0 15px 0; border-bottom:1px dashed #cbd5e1; padding-bottom:10px;">บัตรยืนยันการสมัคร / Confirmation Slip</p>
+         
+         <div style="margin-bottom:10px;">
+           <span style="display:block; font-size:11px; color:#64748b; text-transform:uppercase;">กิจกรรม (Activity)</span>
+           <strong style="color:#0f172a; font-size:14px;">${act.name}</strong>
+         </div>
+         <div style="margin-bottom:10px;">
+           <span style="display:block; font-size:11px; color:#64748b; text-transform:uppercase;">ผู้สมัคร (Participant)</span>
+           <strong style="color:#0f172a; font-size:14px;">${name}</strong>
+         </div>
+         <div style="margin-bottom:10px;">
+           <span style="display:block; font-size:11px; color:#64748b; text-transform:uppercase;">เวลา (Period)</span>
+           <strong style="color:#0f172a; font-size:14px;">${act.period}</strong>
+         </div>
+         <div style="margin-bottom:15px; background:#f1f5f9; padding:8px; border-radius:6px; text-align:center;">
+           <span style="display:block; font-size:11px; color:#64748b; text-transform:uppercase;">รหัสอ้างอิง (Ref No.)</span>
+           <strong style="color:#0284c7; font-size:18px; letter-spacing:1px;">${entry.id}</strong>
+         </div>
+         <div style="text-align:center;">
+           <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${entry.id}" alt="QR" style="display:inline-block; width:120px; height:120px; border:1px solid #e2e8f0; border-radius:4px; padding:4px;">
+         </div>
+      </div>
+      
+      <div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
+        <button class="btn-submit" id="downloadTicketBtn" style="flex:1;">บันทึกรูปภาพตั๋ว</button>
+        <button class="btn-secondary" id="successCloseBtn" style="flex:1;">เสร็จสิ้น</button>
+      </div>
     </div>
   `;
   document.getElementById('successCloseBtn').addEventListener('click', closeRegModal);
+  document.getElementById('downloadTicketBtn').addEventListener('click', () => {
+    generateAndDownloadCanvas(entry.id, act.name, name, act.period);
+  });
   showToast('ลงทะเบียน '+act.name+' สำเร็จ');
+}
+
+function generateAndDownloadCanvas(regId, actName, pName, period) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 600;
+  canvas.height = 750;
+  const ctx = canvas.getContext('2d');
+  
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0,0,canvas.width,120);
+  
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 36px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Woraluck Science Fair 2026', canvas.width/2, 60);
+  ctx.font = '20px sans-serif';
+  ctx.fillStyle = '#94a3b8';
+  ctx.fillText('บัตรยืนยันการสมัคร / Confirmation Slip', canvas.width/2, 95);
+  
+  ctx.textAlign = 'left';
+  let y = 180;
+  ctx.fillStyle = '#64748b';
+  ctx.font = '18px sans-serif';
+  ctx.fillText('กิจกรรม (Activity)', 50, y);
+  y += 35;
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 28px sans-serif';
+  ctx.fillText(actName, 50, y);
+  
+  y += 70;
+  ctx.fillStyle = '#64748b';
+  ctx.font = '18px sans-serif';
+  ctx.fillText('ผู้สมัคร (Participant)', 50, y);
+  y += 35;
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 28px sans-serif';
+  ctx.fillText(pName, 50, y);
+  
+  y += 70;
+  ctx.fillStyle = '#64748b';
+  ctx.font = '18px sans-serif';
+  ctx.fillText('เวลา (Period)', 50, y);
+  y += 35;
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 24px sans-serif';
+  ctx.fillText(period, 50, y);
+  
+  y += 60;
+  ctx.fillStyle = '#f1f5f9';
+  ctx.fillRect(50, y, 500, 100);
+  ctx.fillStyle = '#64748b';
+  ctx.font = '16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('รหัสอ้างอิง (Ref No.)', canvas.width/2, y + 35);
+  ctx.fillStyle = '#0284c7';
+  ctx.font = 'bold 36px sans-serif';
+  ctx.fillText(regId, canvas.width/2, y + 75);
+  
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    ctx.drawImage(img, canvas.width/2 - 75, y + 130, 150, 150);
+    triggerDownload();
+  };
+  img.onerror = () => {
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(canvas.width/2 - 75, y + 130, 150, 150);
+    ctx.fillStyle = '#64748b';
+    ctx.font = '16px sans-serif';
+    ctx.fillText('No QR preview', canvas.width/2, y + 205);
+    triggerDownload();
+  }
+  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${regId}`;
+  
+  function triggerDownload(){
+    try {
+      const dataUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `Ticket_${regId}.png`;
+      a.click();
+    } catch(e) {
+      ctx.clearRect(canvas.width/2 - 75, y + 130, 150, 150);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillRect(canvas.width/2 - 75, y + 130, 150, 150);
+      ctx.fillStyle = '#64748b';
+      ctx.font = '16px sans-serif';
+      ctx.fillText('Save HTML Ticket', canvas.width/2, y + 205);
+      const dataUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `Ticket_${regId}.png`;
+      a.click();
+    }
+  }
 }
 
 document.getElementById('regCloseBtn').addEventListener('click', closeRegModal);
@@ -1412,6 +1565,113 @@ function renderAdminPanel(){
     });
   });
 }
+
+/* =========================================================
+   STATUS / CANCEL
+   ========================================================= */
+const statusOverlay = document.getElementById('statusOverlay');
+const statusResult = document.getElementById('statusResult');
+
+document.getElementById('openStatusBtn').addEventListener('click', ()=>{
+  statusOverlay.classList.add('open');
+  document.getElementById('statusRegId').value = '';
+  statusResult.style.display = 'none';
+});
+
+document.getElementById('statusCloseBtn').addEventListener('click', ()=>{
+  statusOverlay.classList.remove('open');
+});
+
+statusOverlay.addEventListener('click', (e)=>{
+  if(e.target===statusOverlay) statusOverlay.classList.remove('open');
+});
+
+document.getElementById('statusSearchBtn').addEventListener('click', async () => {
+  const regId = document.getElementById('statusRegId').value.trim().toUpperCase();
+  if(!regId) return;
+  
+  const searchBtn = document.getElementById('statusSearchBtn');
+  searchBtn.disabled = true;
+  searchBtn.textContent = 'กำลังค้นหา...';
+  
+  statusResult.style.display = 'block';
+  statusResult.innerHTML = '<p style="text-align:center; color:var(--text-dim);">กำลังตรวจสอบ...</p>';
+  
+  try {
+    let found = null;
+    let foundAct = null;
+    let allData = [];
+    
+    const allRegistrantsData = await Promise.all(
+      ACTIVITIES.map(a => getRegistrants(a.id).then(list => ({ act: a, list })))
+    );
+    
+    for (const { act: a, list } of allRegistrantsData) {
+      const r = list.find(x => x.id === regId);
+      if(r){
+         found = r;
+         foundAct = a;
+         allData = list;
+         break;
+      }
+    }
+    
+    if(!found){
+      statusResult.innerHTML = '<div class="form-msg error show" style="margin:0;">ไม่พบข้อมูลการสมัครสำหรับรหัสอ้างอิงนี้</div>';
+      searchBtn.disabled = false;
+      searchBtn.textContent = 'ค้นหาข้อมูล';
+      return;
+    }
+    
+    statusResult.innerHTML = `
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:15px; margin-bottom:15px;">
+        <h4 style="margin:0 0 10px 0; color:#0f172a;">สถานะ: <span style="color:var(--teal);">ลงทะเบียนเรียบร้อย</span></h4>
+        <p style="margin:0 0 6px 0; color:#475569; font-size:14px;"><strong>กิจกรรม:</strong> ${foundAct.name}</p>
+        <p style="margin:0 0 6px 0; color:#475569; font-size:14px;"><strong>ผู้สมัคร:</strong> ${found.teamName || found.fullName}</p>
+        <p style="margin:0; color:#475569; font-size:14px;"><strong>เวลาสมัคร:</strong> ${new Date(found.timestamp).toLocaleString('th-TH')}</p>
+      </div>
+      <button class="btn-submit danger" id="statusCancelBtn" style="background:var(--danger);">ยกเลิกการสมัคร (สละสิทธิ์)</button>
+    `;
+    
+    document.getElementById('statusCancelBtn').addEventListener('click', () => {
+      showConfirmModal({
+        title: 'ยืนยันการสละสิทธิ์',
+        message: 'คุณต้องการสละสิทธิ์กิจกรรม '+foundAct.name+' ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้ และที่นั่งจะถูกปล่อยให้เพื่อนคนอื่นทันที',
+        confirmText: 'ยืนยันสละสิทธิ์',
+        onConfirm: async () => {
+           const cancelBtn = document.getElementById('statusCancelBtn');
+           cancelBtn.disabled = true;
+           cancelBtn.textContent = 'กำลังยกเลิก...';
+           
+           const newList = allData.filter(x => x.id !== regId);
+           const saved = await saveRegistrants(foundAct.id, newList);
+           
+           if(saved){
+              activitiesState[foundAct.id] = newList;
+              renderActivities();
+              statusResult.innerHTML = `
+                <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:20px; text-align:center;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" width="40" height="40" style="margin-bottom:10px;"><path d="M20 6L9 17l-5-5"/></svg>
+                  <h4 style="color:#065f46; margin:0 0 5px 0;">ยกเลิกการสมัครเรียบร้อยแล้ว</h4>
+                  <p style="color:#047857; margin:0; font-size:14px;">ขอบคุณที่แจ้งสละสิทธิ์เพื่อคืนที่นั่งให้เพื่อนๆ</p>
+                </div>
+              `;
+           } else {
+              statusResult.innerHTML = '<div class="form-msg error show" style="margin:0;">เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง</div>';
+              cancelBtn.disabled = false;
+              cancelBtn.textContent = 'ยกเลิกการสมัคร (สละสิทธิ์)';
+           }
+        }
+      });
+    });
+    
+  } catch(e) {
+    statusResult.innerHTML = '<div class="form-msg error show" style="margin:0;">เกิดข้อผิดพลาดในการเชื่อมต่อ</div>';
+  }
+  
+  searchBtn.disabled = false;
+  searchBtn.textContent = 'ค้นหาข้อมูล';
+});
 
 /* =========================================================
    INIT
