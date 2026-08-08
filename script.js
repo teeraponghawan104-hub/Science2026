@@ -576,7 +576,6 @@ function showToast(msg){
    ========================================================= */
 const adminOverlay = document.getElementById('adminOverlay');
 const adminBody = document.getElementById('adminBody');
-let adminUnlocked = false;
 let adminActiveTab = 'dashboard';
 
 document.getElementById('adminOpenBtn').addEventListener('click', ()=>{
@@ -970,55 +969,67 @@ function renderAdminPanel(){
       </table>`}
     </div>
   `;
+  } // END OF ELSE BLOCK
 
   adminBody.querySelectorAll('[data-tab]').forEach(btn=>{
     btn.addEventListener('click', ()=>{ adminActiveTab = btn.getAttribute('data-tab'); renderAdminPanel(); });
   });
-  const searchInput = document.getElementById('adminSearchInput');
-  if(searchInput){
-    searchInput.addEventListener('input', (e)=>{
-      adminSearchQuery = e.target.value;
-      renderAdminPanel();
-      const newSearchInput = document.getElementById('adminSearchInput');
-      if(newSearchInput){
-        newSearchInput.focus();
-        newSearchInput.setSelectionRange(adminSearchQuery.length, adminSearchQuery.length);
-      }
+  
+  if (adminActiveTab !== 'dashboard') {
+    const act = ACTIVITIES.find(a=>a.id===adminActiveTab);
+    const searchInput = document.getElementById('adminSearchInput');
+    if(searchInput){
+      searchInput.addEventListener('input', (e)=>{
+        adminSearchQuery = e.target.value;
+        renderAdminPanel();
+        const newSearchInput = document.getElementById('adminSearchInput');
+        if(newSearchInput){
+          newSearchInput.focus();
+          newSearchInput.setSelectionRange(adminSearchQuery.length, adminSearchQuery.length);
+        }
+      });
+    }
+    const sortSelect = document.getElementById('adminSortSelect');
+    if(sortSelect){
+      sortSelect.addEventListener('change', (e)=>{
+        adminSortBy = e.target.value;
+        renderAdminPanel();
+      });
+    }
+    adminBody.querySelectorAll('[data-sort-col]').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.getAttribute('data-sort-col');
+        if (col === 'id') {
+          adminSortBy = adminSortBy === 'id-asc' ? 'id-desc' : 'id-asc';
+        } else if (col === 'name') {
+          adminSortBy = adminSortBy === 'name-asc' ? 'name-desc' : 'name-asc';
+        } else if (col === 'grade') {
+          adminSortBy = adminSortBy === 'grade-asc' ? 'grade-desc' : 'grade-asc';
+        } else if (col === 'room') {
+          adminSortBy = adminSortBy === 'room-asc' ? 'room-desc' : 'room-asc';
+        } else if (col === 'time') {
+          adminSortBy = adminSortBy === 'time-asc' ? 'time-desc' : 'time-asc';
+        }
+        renderAdminPanel();
+      });
+    });
+    
+    const exportBtn = document.getElementById('exportBtn');
+    if (exportBtn) exportBtn.addEventListener('click', ()=>exportCSV(act.id));
+    
+    const printBtn = document.getElementById('printBtn');
+    if (printBtn) printBtn.addEventListener('click', ()=>window.print());
+    
+    const resetBtn = document.getElementById('resetBtn');
+    if (resetBtn) resetBtn.addEventListener('click', ()=>resetActivity(act.id));
+
+    adminBody.querySelectorAll('[data-del-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const regId = btn.getAttribute('data-del-id');
+        deleteSingleRegistrant(act.id, regId);
+      });
     });
   }
-  const sortSelect = document.getElementById('adminSortSelect');
-  if(sortSelect){
-    sortSelect.addEventListener('change', (e)=>{
-      adminSortBy = e.target.value;
-      renderAdminPanel();
-    });
-  }
-  adminBody.querySelectorAll('[data-sort-col]').forEach(th => {
-    th.addEventListener('click', () => {
-      const col = th.getAttribute('data-sort-col');
-      if (col === 'id') {
-        adminSortBy = adminSortBy === 'id-asc' ? 'id-desc' : 'id-asc';
-      } else if (col === 'name') {
-        adminSortBy = adminSortBy === 'name-asc' ? 'name-desc' : 'name-asc';
-      } else if (col === 'grade') {
-        adminSortBy = adminSortBy === 'grade-asc' ? 'grade-desc' : 'grade-asc';
-      } else if (col === 'room') {
-        adminSortBy = adminSortBy === 'room-asc' ? 'room-desc' : 'room-asc';
-      } else if (col === 'time') {
-        adminSortBy = adminSortBy === 'time-asc' ? 'time-desc' : 'time-asc';
-      }
-      renderAdminPanel();
-    });
-  });
-  document.getElementById('exportBtn').addEventListener('click', ()=>exportCSV(act.id));
-  document.getElementById('printBtn').addEventListener('click', ()=>window.print());
-  document.getElementById('resetBtn').addEventListener('click', ()=>resetActivity(act.id));
-  adminBody.querySelectorAll('[data-del-id]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const regId = btn.getAttribute('data-del-id');
-      deleteSingleRegistrant(act.id, regId);
-    });
-  });
 }
 
 /* =========================================================
