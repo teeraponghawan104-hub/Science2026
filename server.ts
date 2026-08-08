@@ -6,13 +6,15 @@ import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import fs from "fs";
 import cors from "cors";
 
-const configPath = path.join(process.cwd(), "firebase-applet-config.json");
-let firebaseConfig: any = {};
-try {
-  firebaseConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-} catch (e) {
-  console.error("Could not read firebase-applet-config.json");
-}
+const firebaseConfig = {
+  "projectId": "dogwood-provider-lcf5x",
+  "appId": "1:462562646689:web:d002cbc35d38f921706ee0",
+  "apiKey": "AIzaSyCqCrkizf9tfbLyZB8Hk7c8p6SPWMfDdHs",
+  "authDomain": "dogwood-provider-lcf5x.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-7cc38071-589f-44ad-ae71-6b6190adf747",
+  "storageBucket": "dogwood-provider-lcf5x.firebasestorage.app",
+  "messagingSenderId": "462562646689"
+};
 
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);

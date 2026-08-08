@@ -3,10 +3,15 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import cors from "cors";
 
-// Use import to ensure Vercel traces the file
-import firebaseConfigRaw from "../firebase-applet-config.json";
-
-let firebaseConfig: any = firebaseConfigRaw;
+const firebaseConfig = {
+  "projectId": "dogwood-provider-lcf5x",
+  "appId": "1:462562646689:web:d002cbc35d38f921706ee0",
+  "apiKey": "AIzaSyCqCrkizf9tfbLyZB8Hk7c8p6SPWMfDdHs",
+  "authDomain": "dogwood-provider-lcf5x.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-7cc38071-589f-44ad-ae71-6b6190adf747",
+  "storageBucket": "dogwood-provider-lcf5x.firebasestorage.app",
+  "messagingSenderId": "462562646689"
+};
 
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
