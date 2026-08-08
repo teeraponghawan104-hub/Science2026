@@ -1134,76 +1134,133 @@ function showSuccess(entry, act){
 function generateAndDownloadCanvas(regId, actName, pName, period) {
   const canvas = document.createElement('canvas');
   canvas.width = 600;
-  canvas.height = 750;
+  canvas.height = 920;
   const ctx = canvas.getContext('2d');
   
-  ctx.fillStyle = '#ffffff';
+  // Background
+  ctx.fillStyle = '#f8fafc';
   ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = '#0f172a';
-  ctx.fillRect(0,0,canvas.width,120);
+
+  // Ticket shadow
+  ctx.shadowColor = 'rgba(0,0,0,0.1)';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 10;
   
+  // Ticket shape
+  ctx.fillStyle = '#ffffff';
+  if(ctx.roundRect) {
+    ctx.roundRect(30, 30, 540, 850, 20);
+  } else {
+    ctx.fillRect(30, 30, 540, 850);
+  }
+  ctx.fill();
+
+  ctx.shadowColor = 'transparent';
+  
+  // Header
+  ctx.fillStyle = '#0a0e26';
+  ctx.beginPath();
+  if(ctx.roundRect) {
+    ctx.roundRect(30, 30, 540, 140, [20, 20, 0, 0]);
+  } else {
+    ctx.fillRect(30, 30, 540, 140);
+  }
+  ctx.fill();
+
+  ctx.fillStyle = '#38bdf8';
+  ctx.fillRect(30, 170, 540, 5);
+
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 36px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('Woraluck Science Fair 2026', canvas.width/2, 60);
+  ctx.fillText('Woraluck Science Fair 2026', canvas.width/2, 90);
   ctx.font = '20px sans-serif';
   ctx.fillStyle = '#94a3b8';
-  ctx.fillText('บัตรยืนยันการสมัคร / Confirmation Slip', canvas.width/2, 95);
+  ctx.fillText('บัตรยืนยันการสมัคร / Confirmation Slip', canvas.width/2, 130);
   
   ctx.textAlign = 'left';
-  let y = 180;
+  let y = 230;
   ctx.fillStyle = '#64748b';
   ctx.font = '18px sans-serif';
-  ctx.fillText('กิจกรรม (Activity)', 50, y);
+  ctx.fillText('กิจกรรม (Activity)', 70, y);
   y += 35;
   ctx.fillStyle = '#0f172a';
   ctx.font = 'bold 28px sans-serif';
-  ctx.fillText(actName, 50, y);
+  ctx.fillText(actName, 70, y);
   
-  y += 70;
+  y += 60;
   ctx.fillStyle = '#64748b';
   ctx.font = '18px sans-serif';
-  ctx.fillText('ผู้สมัคร (Participant)', 50, y);
+  ctx.fillText('ผู้สมัคร (Participant)', 70, y);
   y += 35;
   ctx.fillStyle = '#0f172a';
-  ctx.font = 'bold 28px sans-serif';
-  ctx.fillText(pName, 50, y);
+  ctx.font = 'bold 26px sans-serif';
+  ctx.fillText(pName, 70, y);
   
-  y += 70;
+  y += 60;
   ctx.fillStyle = '#64748b';
   ctx.font = '18px sans-serif';
-  ctx.fillText('เวลา (Period)', 50, y);
+  ctx.fillText('เวลา (Period)', 70, y);
   y += 35;
   ctx.fillStyle = '#0f172a';
   ctx.font = 'bold 24px sans-serif';
-  ctx.fillText(period, 50, y);
+  ctx.fillText(period, 70, y);
   
   y += 60;
+  
+  // Dash line
+  ctx.beginPath();
+  ctx.setLineDash([8, 8]);
+  ctx.moveTo(45, y);
+  ctx.lineTo(555, y);
+  ctx.strokeStyle = '#cbd5e1';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.setLineDash([]);
+  
+  // semi-circles for the ticket cut
+  ctx.fillStyle = '#f8fafc';
+  ctx.beginPath();
+  ctx.arc(30, y, 15, 0, Math.PI*2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(570, y, 15, 0, Math.PI*2);
+  ctx.fill();
+  
+  y += 50;
+  // Ref No
   ctx.fillStyle = '#f1f5f9';
-  ctx.fillRect(50, y, 500, 100);
+  if(ctx.roundRect) {
+    ctx.beginPath();
+    ctx.roundRect(70, y, 460, 100, 12);
+    ctx.fill();
+  } else {
+    ctx.fillRect(70, y, 460, 100);
+  }
+  
   ctx.fillStyle = '#64748b';
   ctx.font = '16px sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('รหัสอ้างอิง (Ref No.)', canvas.width/2, y + 35);
+  ctx.fillText('รหัสอ้างอิง (Ref No.)', canvas.width/2, y + 40);
   ctx.fillStyle = '#0284c7';
   ctx.font = 'bold 36px sans-serif';
-  ctx.fillText(regId, canvas.width/2, y + 75);
+  ctx.fillText(regId, canvas.width/2, y + 80);
   
   const img = new Image();
   img.crossOrigin = "anonymous";
   img.onload = () => {
-    ctx.drawImage(img, canvas.width/2 - 75, y + 130, 150, 150);
+    ctx.drawImage(img, canvas.width/2 - 80, y + 130, 160, 160);
     triggerDownload();
   };
   img.onerror = () => {
     ctx.fillStyle = '#e2e8f0';
-    ctx.fillRect(canvas.width/2 - 75, y + 130, 150, 150);
+    ctx.fillRect(canvas.width/2 - 80, y + 130, 160, 160);
     ctx.fillStyle = '#64748b';
     ctx.font = '16px sans-serif';
     ctx.fillText('No QR preview', canvas.width/2, y + 205);
     triggerDownload();
   }
-  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${regId}`;
+  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${regId}&margin=1`;
   
   function triggerDownload(){
     try {
@@ -1213,9 +1270,9 @@ function generateAndDownloadCanvas(regId, actName, pName, period) {
       a.download = `Ticket_${regId}.png`;
       a.click();
     } catch(e) {
-      ctx.clearRect(canvas.width/2 - 75, y + 130, 150, 150);
+      ctx.clearRect(canvas.width/2 - 80, y + 130, 160, 160);
       ctx.fillStyle = '#e2e8f0';
-      ctx.fillRect(canvas.width/2 - 75, y + 130, 150, 150);
+      ctx.fillRect(canvas.width/2 - 80, y + 130, 160, 160);
       ctx.fillStyle = '#64748b';
       ctx.font = '16px sans-serif';
       ctx.fillText('Save HTML Ticket', canvas.width/2, y + 205);
@@ -1368,7 +1425,7 @@ function showConfirmModal({ title, message, confirmText = 'ยืนยัน', 
   if (requirePin) {
     pinHtml = `
       <div style="margin-bottom:16px;">
-        <input type="text" id="confirmPinInput" placeholder="กรุณาใส่รหัส ${requirePin} เพื่อยืนยัน" style="width:100%; padding:10px 14px; border:1px solid var(--border); background:rgba(255,255,255,0.03); color:#fff; border-radius:6px; font-size:14px; text-align:center;">
+        <input type="text" id="confirmPinInput" placeholder="กรุณาใส่รหัสเพื่อยืนยัน" style="width:100%; padding:10px 14px; border:1px solid var(--border); background:rgba(255,255,255,0.03); color:#fff; border-radius:6px; font-size:14px; text-align:center;">
         <div id="confirmPinError" style="color:var(--danger); font-size:12px; margin-top:6px; display:none;">รหัสผ่านไม่ถูกต้อง</div>
       </div>
     `;
