@@ -780,6 +780,44 @@ async function loadAll(){
 function initRealtimeListener(){
   // Polling every 5 seconds for updates
   setInterval(fetchCounts, 5000);
+
+  // Admin polling every 3 seconds
+  setInterval(async () => {
+    const adminOverlay = document.getElementById('adminOverlay');
+    if (adminUnlocked && adminOverlay && adminOverlay.classList.contains('open')) {
+      try {
+        const res = await fetch('/api/admin/registrations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ passcode: adminPasscode, activityId: 'all' })
+        });
+        if (res.ok) {
+           const data = await res.json();
+           adminLists = data.allData;
+           
+           // Preserve focus for search input
+           const activeEl = document.activeElement;
+           const isSearchFocused = activeEl && activeEl.id === 'adminSearchInput';
+           const searchInput = document.getElementById('adminSearchInput');
+           const selectionStart = searchInput ? searchInput.selectionStart : null;
+           
+           renderAdminPanel();
+           
+           if (isSearchFocused) {
+             const newSearchInput = document.getElementById('adminSearchInput');
+             if (newSearchInput) {
+               newSearchInput.focus();
+               if (selectionStart !== null) {
+                 newSearchInput.setSelectionRange(selectionStart, selectionStart);
+               }
+             }
+           }
+        }
+      } catch (e) {
+        console.error('Admin auto-refresh error', e);
+      }
+    }
+  }, 3000);
 }
 
 /* =========================================================
