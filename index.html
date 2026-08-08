@@ -385,6 +385,29 @@ td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim);
   .grid{grid-template-columns:1fr;}
 }
 
+@media print {
+  body * { visibility: hidden; }
+  #adminOverlay, #adminOverlay * { visibility: visible; }
+  #adminOverlay { position: absolute; left: 0; top: 0; right: 0; background: none; overflow: visible; padding: 0; }
+  .admin-panel { margin: 0; max-width: 100%; box-shadow: none; border: none; width: 100%; padding: 0; }
+  .admin-btns, .modal-close, .admin-pass, .admin-tabs, #adminSearchInput, #adminSortSelect, .btn-del-item, th:last-child, td:last-child { display: none !important; }
+  th[data-sort-col] { pointer-events: none; }
+  .table-wrap { max-height: none; overflow: visible; border: none; box-shadow: none; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #ccc; padding: 6px; font-size: 11pt; color: #000; text-align: left; }
+  .admin-header p { display: none; }
+  /* Show the active tab title as the main heading when printing */
+  .admin-panel::before {
+    content: "สรุปรายชื่อผู้สมัคร";
+    display: block;
+    font-size: 18pt;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
+    color: #000;
+  }
+}
+
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto;}
 }
@@ -923,6 +946,60 @@ async function handleSubmit(e){
     return;
   }
 
+  // --- Check for duplicate registrations in the same period ---
+  let isDuplicate = false;
+  let dupActivityName = '';
+  const searchPhone = data.phone;
+  const searchName = data.fullName || data.teamName;
+  const searchMembers = data.members || [];
+
+  const currentIsMorning = act.period.includes('เช้า') || act.period.includes('08.30');
+  const currentIsAfternoon = act.period.includes('บ่าย');
+
+  const allRegistrantsData = await Promise.all(
+    ACTIVITIES.map(a => getRegistrants(a.id).then(list => ({ act: a, list })))
+  );
+
+  for (const { act: a, list } of allRegistrantsData) {
+    const aIsMorning = a.period.includes('เช้า') || a.period.includes('08.30');
+    const aIsAfternoon = a.period.includes('บ่าย');
+    
+    // Only check for duplicates if the activities are in the same period
+    const timeConflict = (currentIsMorning && aIsMorning) || (currentIsAfternoon && aIsAfternoon);
+    
+    if (timeConflict) {
+      const found = list.find(r => {
+        // Check phone
+        if (searchPhone && r.phone === searchPhone) return true;
+        
+        const rName = r.fullName || r.teamName;
+        const rMembers = Array.isArray(r.members) ? r.members : [];
+        
+        // Check if main name matches any existing main name or member
+        if (searchName && (rName === searchName || rMembers.includes(searchName))) return true;
+        
+        // Check if any of the new members match any existing main name or member
+        if (searchMembers.some(m => m === rName || rMembers.includes(m))) return true;
+        
+        return false;
+      });
+
+      if (found) {
+        isDuplicate = true;
+        dupActivityName = a.name;
+        break;
+      }
+    }
+  }
+
+  if(isDuplicate){
+    msgEl.className='form-msg error show';
+    msgEl.textContent=`ขออภัย ชื่อ เบอร์โทร หรือสมาชิกบางคนได้ลงทะเบียนใน "${dupActivityName}" ไปแล้วในช่วงเวลาเดียวกัน`;
+    submitBtn.disabled=false; submitBtn.textContent='ยืนยันการลงทะเบียน';
+    return;
+  }
+  // -------------------------------------------------------------
+
   const entry = {
     id: act.id.slice(0,3).toUpperCase()+'-'+Date.now().toString(36).toUpperCase(),
     timestamp: new Date().toISOString(),
@@ -1232,6 +1309,7 @@ function renderAdminPanel(){
       <span class="count">สมัครแล้ว <strong>${list.length}</strong> / ${act.maxSeats} ${act.unit}</span>
       <div class="admin-btns">
         <button class="btn-tiny" id="exportBtn">ส่งออก CSV</button>
+        <button class="btn-tiny" id="printBtn">พิมพ์รายชื่อ</button>
         <button class="btn-tiny danger" id="resetBtn">ล้างรายชื่อทั้งหมด</button>
       </div>
     </div>
@@ -1325,6 +1403,7 @@ function renderAdminPanel(){
     });
   });
   document.getElementById('exportBtn').addEventListener('click', ()=>exportCSV(act.id));
+  document.getElementById('printBtn').addEventListener('click', ()=>window.print());
   document.getElementById('resetBtn').addEventListener('click', ()=>resetActivity(act.id));
   adminBody.querySelectorAll('[data-del-id]').forEach(btn => {
     btn.addEventListener('click', () => {
