@@ -1,0 +1,51 @@
+
+function printRegistrants(actId) {
+  const act = ACTIVITIES.find(a=>a.id===actId);
+  const rawList = adminLists[actId] || [];
+  const list = typeof sortRegistrants === 'function' ? sortRegistrants(rawList, adminSortBy) : rawList;
+  const isTeam = act.mode === 'team';
+  
+  let html = `<div class="print-header">รายชื่อผู้สมัคร: ${act.name}<br><span style="font-size:14pt; font-weight:normal; color:#444;">Woraluck Science Fair 2026</span></div>`;
+  html += `<table><thead><tr>
+    <th>รหัส</th>
+    <th>${isTeam?'ชื่อทีม':'ชื่อ-นามสกุล'}</th>
+    <th>ระดับชั้น</th>
+    <th>ห้อง</th>
+    ${isTeam?'<th>สมาชิก</th>':''}
+    <th>โทรศัพท์</th>
+    ${act.extraFields.map(f=>`<th>${f.label}</th>`).join('')}
+    <th>เวลาสมัคร</th>
+  </tr></thead><tbody>`;
+  
+  if (list.length === 0) {
+    html += `<tr><td colspan="10" style="text-align:center;">ยังไม่มีผู้สมัครในกิจกรรมนี้</td></tr>`;
+  } else {
+    list.forEach(r => {
+      let timeStr = '';
+      try { timeStr = new Date(r.timestamp).toLocaleString('th-TH'); } catch(e){}
+      let membersStr = '';
+      if (isTeam && Array.isArray(r.members)) membersStr = r.members.join(', ');
+      
+      html += `<tr>
+        <td>${r.id}</td>
+        <td><strong>${isTeam ? r.teamName : r.fullName}</strong></td>
+        <td>${r.grade||''}</td>
+        <td>${r.room||''}</td>
+        ${isTeam ? `<td>${membersStr}</td>` : ''}
+        <td>${r.phone||''}</td>
+        ${act.extraFields.map(f=>`<td>${r[f.id]||''}</td>`).join('')}
+        <td>${timeStr}</td>
+      </tr>`;
+    });
+  }
+  html += `</tbody></table>`;
+  
+  const printSection = document.getElementById('printSection');
+  if (printSection) {
+    printSection.innerHTML = html;
+    window.print();
+    printSection.innerHTML = ''; // clear after print
+  } else {
+    window.print(); // fallback
+  }
+}

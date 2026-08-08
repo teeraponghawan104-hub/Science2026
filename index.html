@@ -1411,6 +1411,7 @@ function printRegistrants(actId) {
     window.print(); // fallback
   }
 }
+
   const act = ACTIVITIES.find(a=>a.id===actId);
   const rawList = adminLists[actId] || [];
   const list = typeof sortRegistrants === 'function' ? sortRegistrants(rawList, adminSortBy) : rawList;
