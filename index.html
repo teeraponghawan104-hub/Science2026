@@ -461,45 +461,26 @@ body {
 }
 
 @media print {
-  @page { size: A4 portrait; margin: 15mm; }
+  @page { size: A4 landscape; margin: 10mm; }
   body { background: #fff !important; color: #000 !important; margin: 0; padding: 0; height: auto; overflow: visible; }
   
-  .nav, .hero, .container, footer, #regOverlay { display: none !important; }
+  body > *:not(#printSection) { display: none !important; }
   
-  #adminOverlay { display: block !important; position: static !important; background: none !important; opacity: 1 !important; visibility: visible !important; height: auto !important; min-height: 0 !important; padding: 0 !important; overflow: visible !important; }
+  #printSection { display: block !important; position: relative !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
   
-  .modal, .admin-modal { position: static !important; max-width: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; background: none !important; transform: none !important; overflow: visible !important; height: auto !important; }
-
-  .admin-table-wrap { max-height: none !important; height: auto !important; overflow: visible !important; border: none !important; margin: 0 !important; padding: 0 !important; }
-
-  .admin-btns, .modal-close, .admin-pass, .admin-tabs, #adminSearchInput, #adminSortSelect, label[for="adminSortSelect"], .btn-del-item, th:last-child, td:last-child, .modal-eyebrow { display: none !important; }
-  
-  th[data-sort-col] { pointer-events: none; }
-  
-  table { border-collapse: collapse !important; width: 100% !important; page-break-inside: auto; margin-top: 20px; }
+  table { border-collapse: collapse !important; width: 100% !important; page-break-inside: auto; margin-top: 20px; table-layout: auto !important; }
   tr { page-break-inside: avoid; page-break-after: auto; }
-  th, td { border: 1px solid #000 !important; padding: 8px !important; font-size: 12pt !important; color: #000 !important; text-align: left; background: none !important; }
+  th, td { border: 1px solid #000 !important; padding: 8px !important; font-size: 11pt !important; color: #000 !important; text-align: left; background: none !important; white-space: normal !important; word-wrap: break-word !important; overflow-wrap: break-word !important; }
   
-  .print-header { display: none; }
+  .print-header { display: block !important; font-size: 18pt; font-weight: bold; text-align: center; margin-bottom: 20px; color: #000; }
 }
-
-@media print {
-  .print-header {
-    display: block !important;
-    font-size: 18pt;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-    color: #000;
-  }
-}
-
 @media (prefers-reduced-motion: reduce){
   html{scroll-behavior:auto;}
 }
 </style>
 </head>
 <body>
+<div id="printSection" class="print-only"></div>
 
 <nav class="nav">
   <div class="nav-inner">
@@ -1379,6 +1360,57 @@ function renderAdminGate(){
 function csvEscape(v){ if(v==null) return ''; const s=String(v).replace(/"/g,'""'); return `"${s}"`; }
 
 function exportCSV(actId){
+
+function printRegistrants(actId) {
+  const act = ACTIVITIES.find(a=>a.id===actId);
+  const rawList = adminLists[actId] || [];
+  const list = typeof sortRegistrants === 'function' ? sortRegistrants(rawList, adminSortBy) : rawList;
+  const isTeam = act.mode === 'team';
+  
+  let html = `<div class="print-header">รายชื่อผู้สมัคร: ${act.name}<br><span style="font-size:14pt; font-weight:normal; color:#444;">Woraluck Science Fair 2026</span></div>`;
+  html += `<table><thead><tr>
+    <th>รหัส</th>
+    <th>${isTeam?'ชื่อทีม':'ชื่อ-นามสกุล'}</th>
+    <th>ระดับชั้น</th>
+    <th>ห้อง</th>
+    ${isTeam?'<th>สมาชิก</th>':''}
+    <th>โทรศัพท์</th>
+    ${act.extraFields.map(f=>`<th>${f.label}</th>`).join('')}
+    <th>เวลาสมัคร</th>
+  </tr></thead><tbody>`;
+  
+  if (list.length === 0) {
+    html += `<tr><td colspan="10" style="text-align:center;">ยังไม่มีผู้สมัครในกิจกรรมนี้</td></tr>`;
+  } else {
+    list.forEach(r => {
+      let timeStr = '';
+      try { timeStr = new Date(r.timestamp).toLocaleString('th-TH'); } catch(e){}
+      let membersStr = '';
+      if (isTeam && Array.isArray(r.members)) membersStr = r.members.join(', ');
+      
+      html += `<tr>
+        <td>${r.id}</td>
+        <td><strong>${isTeam ? r.teamName : r.fullName}</strong></td>
+        <td>${r.grade||''}</td>
+        <td>${r.room||''}</td>
+        ${isTeam ? `<td>${membersStr}</td>` : ''}
+        <td>${r.phone||''}</td>
+        ${act.extraFields.map(f=>`<td>${r[f.id]||''}</td>`).join('')}
+        <td>${timeStr}</td>
+      </tr>`;
+    });
+  }
+  html += `</tbody></table>`;
+  
+  const printSection = document.getElementById('printSection');
+  if (printSection) {
+    printSection.innerHTML = html;
+    window.print();
+    printSection.innerHTML = ''; // clear after print
+  } else {
+    window.print(); // fallback
+  }
+}
   const act = ACTIVITIES.find(a=>a.id===actId);
   const rawList = adminLists[actId] || [];
   const list = typeof sortRegistrants === 'function' ? sortRegistrants(rawList, adminSortBy) : rawList;
@@ -1848,7 +1880,7 @@ function renderAdminPanel(){
     if (exportBtn) exportBtn.addEventListener('click', ()=>exportCSV(act.id));
     
     const printBtn = document.getElementById('printBtn');
-    if (printBtn) printBtn.addEventListener('click', ()=>window.print());
+    if (printBtn) printBtn.addEventListener('click', ()=>printRegistrants(act.id));
     
     const resetBtn = document.getElementById('resetBtn');
     if (resetBtn) resetBtn.addEventListener('click', ()=>resetActivity(act.id));
