@@ -371,18 +371,93 @@ td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim);
 .toast svg{width:17px; height:17px; color:var(--teal); flex:none;}
 
 /* ---------- RESPONSIVE ---------- */
-@media (max-width:640px){
-  .container{padding:0 16px;}
-  .nav-inner{padding:12px 16px;}
-  .nav-brand .label{font-size:13px;}
-  .hero{padding:64px 16px 48px;}
-  .hero-logo-wrap{width:160px; height:160px;}
-  .section{padding:50px 0;}
-  .notes{padding:24px; gap:20px;}
-  .modal{padding:24px;}
-  .countdown .unit{min-width:62px; padding:10px 12px;}
-  .countdown .unit .num{font-size:20px;}
-  .grid{grid-template-columns:1fr;}
+/* Minimum touch targets */
+button, a.nav-cta, input, select {
+  min-height: 44px;
+}
+.btn-del-item {
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+/* Background image scaling */
+body {
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+}
+
+/* 1. Mobile (320px - 480px) */
+@media (max-width: 480px) {
+  html { font-size: 14px; }
+  .container { padding: 0 1.2rem; }
+  .nav-inner { 
+    flex-direction: column; 
+    padding: 0.8rem 1.2rem; 
+    gap: 0.8rem; 
+    text-align: center; 
+  }
+  .nav-brand { flex-direction: column; gap: 0.4rem; }
+  .nav-brand .label { font-size: 0.9rem; line-height: 1.4; white-space: normal; }
+  
+  .hero { padding: 4rem 1.2rem 3rem; }
+  .hero-logo-wrap { width: 140px; height: 140px; margin-bottom: 2rem; }
+  .hero h1 { font-size: 2.2rem; line-height: 1.2; }
+  .hero .quote { font-size: 1rem; }
+  
+  .countdown { gap: 0.5rem; }
+  .countdown .unit { min-width: 60px; padding: 0.6rem; }
+  .countdown .unit .num { font-size: 1.6rem; }
+  
+  .section { padding: 3rem 0; }
+  .section-head h2 { font-size: 1.8rem; }
+  .section-head p { font-size: 1rem; }
+  
+  .grid { grid-template-columns: 1fr; gap: 1rem; }
+  .card { padding: 1.5rem; }
+  
+  .notes { padding: 1.5rem; grid-template-columns: 1fr; gap: 1.5rem; }
+  
+  .modal { padding: 1.5rem; border-radius: var(--radius); }
+  .modal h3 { font-size: 1.5rem; }
+  .modal-sub { font-size: 0.95rem; }
+  
+  .admin-toolbar { flex-direction: column; align-items: stretch; gap: 0.8rem; }
+  .admin-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .btn-tiny { width: 100%; }
+}
+
+/* 2. Tablet (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  html { font-size: 15px; }
+  .container { padding: 0 1.5rem; }
+  .nav-inner { padding: 1rem 1.5rem; flex-wrap: wrap; justify-content: center; gap: 1rem; }
+  .hero { padding: 5rem 1.5rem 4rem; }
+  .hero-logo-wrap { width: 180px; height: 180px; }
+  
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .notes { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* 3. Small Laptop (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  html { font-size: 16px; }
+  .container { padding: 0 2rem; }
+  .grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+}
+
+/* 4. Desktop (1025px - 1440px) */
+@media (min-width: 1025px) and (max-width: 1440px) {
+  html { font-size: 16px; }
+}
+
+/* 5. Large Screen (1441px+) */
+@media (min-width: 1441px) {
+  html { font-size: 18px; }
+  .container { max-width: 1400px; }
+  .hero { padding: 7rem 2rem 5rem; }
+  .hero h1 { font-size: 4rem; }
+  .grid { grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 2rem; }
 }
 
 @media print {
@@ -557,32 +632,15 @@ td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim);
 </div>
 
 <script type="module">
-import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection } from "firebase/firestore";
-
-const firebaseConfig = {
-  projectId: "dogwood-provider-lcf5x",
-  appId: "1:462562646689:web:d002cbc35d38f921706ee0",
-  apiKey: "AIzaSyCqCrkizf9tfbLyZB8Hk7c8p6SPWMfDdHs",
-  authDomain: "dogwood-provider-lcf5x.firebaseapp.com"
-};
-
-const app = initializeApp(firebaseConfig);
-const databaseId = "ai-studio-7cc38071-589f-44ad-ae71-6b6190adf747";
-window.db = getFirestore(app, databaseId);
-
-window.doc = doc;
-window.getDoc = getDoc;
-window.setDoc = setDoc;
-window.onSnapshot = onSnapshot;
-window.collection = collection;
-
 /* =========================================================
    CONFIG — edit these to adjust the event
    ========================================================= */
 const DEADLINE = new Date('2026-08-13T23:59:59+07:00');
 const EVENT_DATE_LABEL = '20 สิงหาคม 2569';
-const ADMIN_CODE = 'SCI2569'; // change this passcode as needed
+// Admin passcode is validated on the server now.
+let adminUnlocked = false;
+let adminPasscode = '';
+
 
 // Seat limits are not specified in the source meeting notes,
 // so reasonable defaults are set below — adjust maxSeats freely.
@@ -646,41 +704,22 @@ const ICONS = {
 /* =========================================================
    STATE
    ========================================================= */
-let activitiesState = {}; // id -> array of registrants
+let activitiesState = {}; // id -> count
+let adminLists = {}; // id -> full list for admin
 let currentActivity = null;
 
 function isPastDeadline(){ return Date.now() > DEADLINE.getTime(); }
 
-async function getRegistrants(id){
-  try{
-    const docRef = window.doc(window.db, "registrations", id);
-    const fetchPromise = window.getDoc(docRef);
-    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 4000));
-    const docSnap = await Promise.race([fetchPromise, timeoutPromise]);
-    if (docSnap && docSnap.exists()) {
-      const list = docSnap.data().list || [];
-      try { localStorage.setItem("reg_" + id, JSON.stringify(list)); } catch(_) {}
-      return list;
+async function fetchCounts(){
+  try {
+    const res = await fetch('/api/activities/summary');
+    if(res.ok) {
+      const data = await res.json();
+      activitiesState = data.summary;
+      renderActivities();
     }
-    return [];
-  }catch(e){
-    console.warn("Firestore warning, using local data backup:", e?.message || e);
-    try {
-      const local = localStorage.getItem("reg_" + id);
-      if (local) return JSON.parse(local);
-    } catch(_) {}
-    return [];
-  }
-}
-async function saveRegistrants(id, list){
-  try { localStorage.setItem("reg_" + id, JSON.stringify(list)); } catch(_) {}
-  try{
-    const docRef = window.doc(window.db, "registrations", id);
-    await window.setDoc(docRef, { list });
-    return true;
-  }catch(e){
-    console.warn("Firestore save warning, saved locally:", e?.message || e);
-    return true;
+  } catch(e) {
+    console.error(e);
   }
 }
 
@@ -699,8 +738,7 @@ function renderActivities(){
   const grid = document.getElementById('activityGrid');
   const deadlinePassed = isPastDeadline();
   grid.innerHTML = ACTIVITIES.map(act=>{
-    const list = activitiesState[act.id] || [];
-    const count = list.length;
+    const count = activitiesState[act.id] || 0;
     const {pct, cls, label} = statusFor(count, act.maxSeats);
     const full = count >= act.maxSeats;
     const disabled = full || deadlinePassed;
@@ -735,35 +773,12 @@ function renderActivities(){
 }
 
 async function loadAll(){
-  try {
-    for(const act of ACTIVITIES){
-      activitiesState[act.id] = await getRegistrants(act.id);
-    }
-    renderActivities();
-  } catch(e) {
-    console.warn("loadAll error:", e);
-  }
+  await fetchCounts();
 }
 
 function initRealtimeListener(){
-  try {
-    window.onSnapshot(window.collection(window.db, "registrations"), (snapshot) => {
-      snapshot.forEach((docSnap) => {
-        if (docSnap.exists()) {
-          activitiesState[docSnap.id] = docSnap.data().list || [];
-        }
-      });
-      renderActivities();
-      const adminModal = document.getElementById('adminModal');
-      if (adminModal && adminModal.classList.contains('show')) {
-        renderAdminPanel();
-      }
-    }, (err) => {
-      console.warn("Realtime listener warning:", err?.message || err);
-    });
-  } catch(e) {
-    console.warn("initRealtimeListener exception:", e);
-  }
+  // Polling every 5 seconds for updates
+  setInterval(fetchCounts, 5000);
 }
 
 /* =========================================================
@@ -961,88 +976,73 @@ async function handleSubmit(e){
     return;
   }
 
-  const latest = await getRegistrants(act.id);
-  if(latest.length >= act.maxSeats){
+  const latestCount = activitiesState[act.id] || 0;
+  if(latestCount >= act.maxSeats){
     msgEl.className='form-msg full show';
     msgEl.textContent='ขออภัย ที่นั่งกิจกรรมนี้เต็มแล้ว';
     submitBtn.disabled=false; submitBtn.textContent='ยืนยันการลงทะเบียน';
-    activitiesState[act.id] = latest;
-    renderActivities();
     return;
   }
 
   // --- Check for duplicate registrations in the same period ---
-  let isDuplicate = false;
-  let dupActivityName = '';
-  const searchPhone = data.phone;
-  const searchName = data.fullName || data.teamName;
-  const searchMembers = data.members || [];
+  const periods = {};
+  ACTIVITIES.forEach(a => {
+    periods[a.id] = {
+      isMorning: a.period.includes('เช้า') || a.period.includes('08.30'),
+      isAfternoon: a.period.includes('บ่าย')
+    };
+  });
+  periods.currentIsMorning = act.period.includes('เช้า') || act.period.includes('08.30');
+  periods.currentIsAfternoon = act.period.includes('บ่าย');
 
-  const currentIsMorning = act.period.includes('เช้า') || act.period.includes('08.30');
-  const currentIsAfternoon = act.period.includes('บ่าย');
-
-  const allRegistrantsData = await Promise.all(
-    ACTIVITIES.map(a => getRegistrants(a.id).then(list => ({ act: a, list })))
-  );
-
-  for (const { act: a, list } of allRegistrantsData) {
-    const aIsMorning = a.period.includes('เช้า') || a.period.includes('08.30');
-    const aIsAfternoon = a.period.includes('บ่าย');
+  try {
+    const dupRes = await fetch('/api/check-duplicate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: data.phone,
+        searchName: data.fullName || data.teamName,
+        searchMembers: data.members || [],
+        periods
+      })
+    });
     
-    // Only check for duplicates if the activities are in the same period
-    const timeConflict = (currentIsMorning && aIsMorning) || (currentIsAfternoon && aIsAfternoon);
-    
-    if (timeConflict) {
-      const found = list.find(r => {
-        // Check phone
-        if (searchPhone && r.phone === searchPhone) return true;
-        
-        const rName = r.fullName || r.teamName;
-        const rMembers = Array.isArray(r.members) ? r.members : [];
-        
-        // Check if main name matches any existing main name or member
-        if (searchName && (rName === searchName || rMembers.includes(searchName))) return true;
-        
-        // Check if any of the new members match any existing main name or member
-        if (searchMembers.some(m => m === rName || rMembers.includes(m))) return true;
-        
-        return false;
-      });
-
-      if (found) {
-        isDuplicate = true;
-        dupActivityName = a.name;
-        break;
+    if (dupRes.ok) {
+      const dupData = await dupRes.json();
+      if (dupData.isDuplicate) {
+        const dupActName = ACTIVITIES.find(a => a.id === dupData.dupActivityId)?.name || 'กิจกรรมอื่น';
+        msgEl.className='form-msg error show';
+        msgEl.textContent=`ขออภัย ชื่อ เบอร์โทร หรือสมาชิกบางคนได้ลงทะเบียนใน "${dupActName}" ไปแล้วในช่วงเวลาเดียวกัน`;
+        submitBtn.disabled=false; submitBtn.textContent='ยืนยันการลงทะเบียน';
+        return;
       }
     }
+  } catch (e) {
+    console.error(e);
   }
 
-  if(isDuplicate){
-    msgEl.className='form-msg error show';
-    msgEl.textContent=`ขออภัย ชื่อ เบอร์โทร หรือสมาชิกบางคนได้ลงทะเบียนใน "${dupActivityName}" ไปแล้วในช่วงเวลาเดียวกัน`;
-    submitBtn.disabled=false; submitBtn.textContent='ยืนยันการลงทะเบียน';
-    return;
-  }
   // -------------------------------------------------------------
 
-  const entry = {
-    id: act.id.slice(0,3).toUpperCase()+'-'+Date.now().toString(36).toUpperCase(),
-    timestamp: new Date().toISOString(),
-    ...data
-  };
-  latest.push(entry);
-  const saved = await saveRegistrants(act.id, latest);
-
-  if(!saved){
+  try {
+    const regRes = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activityId: act.id, data })
+    });
+    
+    if (regRes.ok) {
+      const result = await regRes.json();
+      activitiesState[act.id] = (activitiesState[act.id] || 0) + 1;
+      renderActivities();
+      showSuccess(result.entry, act);
+    } else {
+      throw new Error("Failed to register");
+    }
+  } catch(e) {
     msgEl.className='form-msg error show';
     msgEl.textContent='บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
     submitBtn.disabled=false; submitBtn.textContent='ยืนยันการลงทะเบียน';
-    return;
   }
-
-  activitiesState[act.id] = latest;
-  renderActivities();
-  showSuccess(entry, act);
 }
 
 function showSuccess(entry, act){
@@ -1209,8 +1209,7 @@ function showToast(msg){
    ========================================================= */
 const adminOverlay = document.getElementById('adminOverlay');
 const adminBody = document.getElementById('adminBody');
-let adminUnlocked = false;
-let adminActiveTab = ACTIVITIES[0].id;
+let adminActiveTab = 'dashboard';
 
 document.getElementById('adminOpenBtn').addEventListener('click', ()=>{
   adminOverlay.classList.add('open');
@@ -1232,10 +1231,38 @@ function renderAdminGate(){
       <button class="btn-submit" id="adminUnlockBtn" style="max-width:260px;">เข้าสู่ระบบ</button>
     </div>
   `;
-  document.getElementById('adminUnlockBtn').addEventListener('click', ()=>{
+  document.getElementById('adminUnlockBtn').addEventListener('click', async ()=>{
     const val = document.getElementById('adminPassInput').value;
-    if(val===ADMIN_CODE){ adminUnlocked=true; renderAdminPanel(); }
-    else{ document.getElementById('adminPassErr').style.display='block'; }
+    const btn = document.getElementById('adminUnlockBtn');
+    const err = document.getElementById('adminPassErr');
+    err.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'กำลังตรวจสอบ...';
+    
+    try {
+      const res = await fetch('/api/admin/registrations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode: val, activityId: 'all' })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        adminLists = data.allData;
+        adminUnlocked = true;
+        adminPasscode = val;
+        renderAdminPanel();
+      } else {
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'เข้าสู่ระบบ';
+      }
+    } catch(e) {
+      err.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'เข้าสู่ระบบ';
+    }
   });
   document.getElementById('adminPassInput').addEventListener('keydown', (e)=>{
     if(e.key==='Enter') document.getElementById('adminUnlockBtn').click();
@@ -1246,7 +1273,7 @@ function csvEscape(v){ if(v==null) return ''; const s=String(v).replace(/"/g,'""
 
 function exportCSV(actId){
   const act = ACTIVITIES.find(a=>a.id===actId);
-  const rawList = activitiesState[actId] || [];
+  const rawList = adminLists[actId] || [];
   const list = typeof sortRegistrants === 'function' ? sortRegistrants(rawList, adminSortBy) : rawList;
   const isTeam = act.mode === 'team';
   const cols = isTeam
@@ -1330,18 +1357,26 @@ async function resetActivity(actId){
     message: `คุณต้องการล้างรายชื่อผู้สมัครทั้งหมดของกิจกรรม "${act.name}" ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้`,
     confirmText: 'ล้างทั้งหมด',
     onConfirm: async () => {
-      await saveRegistrants(actId, []);
-      activitiesState[actId] = [];
-      renderActivities();
-      renderAdminPanel();
-      showToast('ล้างรายชื่อทั้งหมดเรียบร้อยแล้ว');
+      try {
+        await fetch('/api/admin/reset', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ activityId: actId, passcode: adminPasscode })
+        });
+        adminLists[actId] = [];
+        renderAdminPanel();
+        fetchCounts();
+        showToast('ล้างรายชื่อทั้งหมดเรียบร้อยแล้ว');
+      } catch(e) {
+        showToast('เกิดข้อผิดพลาดในการล้างข้อมูล');
+      }
     }
   });
 }
 
 function deleteSingleRegistrant(actId, regId){
   const act = ACTIVITIES.find(a=>a.id===actId);
-  const list = activitiesState[actId] || [];
+  const list = adminLists[actId] || [];
   const target = list.find(r=>r.id===regId);
   if(!target) return;
   const targetName = target.teamName || target.fullName || regId;
@@ -1351,14 +1386,17 @@ function deleteSingleRegistrant(actId, regId){
     message: `คุณต้องการลบผู้สมัคร "${targetName}" (${regId}) ออกจากกิจกรรม ${act.name} ใช่หรือไม่?`,
     confirmText: 'ลบรายชื่อ',
     onConfirm: async () => {
-      const newList = list.filter(r=>r.id !== regId);
-      const saved = await saveRegistrants(actId, newList);
-      if(saved){
-        activitiesState[actId] = newList;
-        renderActivities();
+      try {
+        await fetch('/api/cancel', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ activityId: actId, regId: regId, passcode: adminPasscode })
+        });
+        adminLists[actId] = list.filter(r=>r.id !== regId);
         renderAdminPanel();
+        fetchCounts();
         showToast('ลบ ' + targetName + ' เรียบร้อยแล้ว');
-      } else {
+      } catch(e) {
         showToast('เกิดข้อผิดพลาดในการลบข้อมูล');
       }
     }
@@ -1432,46 +1470,95 @@ function getSortIndicator(col) {
 }
 
 function renderAdminPanel(){
-  const act = ACTIVITIES.find(a=>a.id===adminActiveTab);
-  const list = activitiesState[act.id] || [];
-  const isTeam = act.mode==='team';
+  let tabsHTML = `<button class="admin-tab ${adminActiveTab==='dashboard'?'active':''}" data-tab="dashboard">ภาพรวม (Dashboard)</button>`;
+  tabsHTML += ACTIVITIES.map(a=>`<button class="admin-tab ${a.id===adminActiveTab?'active':''}" data-tab="${a.id}">${a.name}</button>`).join('');
 
-  let filteredList = list;
-  if(adminSearchQuery.trim()){
-    const q = adminSearchQuery.trim().toLowerCase();
-    filteredList = list.filter(r => {
-      const idMatch = (r.id || '').toLowerCase().includes(q);
-      const nameMatch = (r.fullName || r.teamName || '').toLowerCase().includes(q);
-      const roomMatch = (r.room || '').toLowerCase().includes(q);
-      const gradeMatch = (r.grade || '').toLowerCase().includes(q);
-      const phoneMatch = (r.phone || '').toLowerCase().includes(q);
-      const memberMatch = Array.isArray(r.members) && r.members.some(m => m.toLowerCase().includes(q));
-      return idMatch || nameMatch || roomMatch || gradeMatch || phoneMatch || memberMatch;
-    });
-  }
+  if (adminActiveTab === 'dashboard') {
+     let dashboardCards = ACTIVITIES.map(act => {
+        const count = adminLists[act.id] ? adminLists[act.id].length : 0;
+        const pct = Math.min(100, Math.round((count / act.maxSeats) * 100));
+        let color = '#10b981'; // Green
+        if (pct >= 100) color = '#ef4444'; // Red
+        else if (pct >= 80) color = '#f59e0b'; // Orange
+        
+        return `
+          <div style="background:var(--bg-2); border:1px solid var(--border-strong); border-radius:12px; padding:16px;">
+            <h4 style="margin:0 0 10px 0; font-size:15px;">${act.name}</h4>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:var(--text-mute);">
+              <span>รับ ${act.maxSeats} ${act.unit}</span>
+              <span style="color:${color}; font-weight:600;">สมัครแล้ว ${count}</span>
+            </div>
+            <div style="width:100%; background:var(--bg); border-radius:4px; height:8px; overflow:hidden;">
+              <div style="height:100%; width:${pct}%; background:${color};"></div>
+            </div>
+          </div>
+        `;
+     }).join('');
 
-  filteredList = sortRegistrants(filteredList, adminSortBy);
+     // Find most popular
+     let sortedActs = [...ACTIVITIES].map(act => ({...act, count: adminLists[act.id]?.length || 0}));
+     sortedActs.sort((a,b) => b.count - a.count);
+     let popularAct = sortedActs[0];
 
-  adminBody.innerHTML = `
-    <p class="modal-eyebrow">แผงควบคุมสำหรับเจ้าหน้าที่</p>
-    <h3>รายชื่อผู้สมัคร</h3>
-    <div class="admin-tabs">
-      ${ACTIVITIES.map(a=>`<button class="admin-tab ${a.id===adminActiveTab?'active':''}" data-tab="${a.id}">${a.name}</button>`).join('')}
-    </div>
-    <div class="admin-toolbar">
-      <span class="count">สมัครแล้ว <strong>${list.length}</strong> / ${act.maxSeats} ${act.unit}</span>
-      <div class="admin-btns">
-        <button class="btn-tiny" id="exportBtn">ส่งออก CSV</button>
-        <button class="btn-tiny" id="printBtn">พิมพ์รายชื่อ</button>
-        <button class="btn-tiny danger" id="resetBtn">ล้างรายชื่อทั้งหมด</button>
+     adminBody.innerHTML = `
+      <p class="modal-eyebrow">แผงควบคุมสำหรับเจ้าหน้าที่</p>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3>ภาพรวมการสมัคร (Dashboard)</h3>
       </div>
-    </div>
-    <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
-      <div style="flex:1; min-width:180px;">
-        <input type="text" id="adminSearchInput" placeholder="🔍 ค้นหาชื่อ, รหัส, ห้อง..." value="${adminSearchQuery}" style="width:100%; background:var(--bg); border:1px solid var(--border-strong); color:var(--text); border-radius:var(--radius-sm); padding:8px 12px; font-size:13px;">
+      <div class="admin-tabs">
+        ${tabsHTML}
       </div>
-      <div style="display:flex; align-items:center; gap:6px;">
-        <label for="adminSortSelect" style="font-size:12.5px; color:var(--text-mute); white-space:nowrap;">เรียงตาม:</label>
+      
+      <div style="margin-bottom:20px; padding:16px; background:var(--bg-2); border:1px solid var(--gold); border-radius:12px;">
+        <h4 style="margin:0 0 5px 0; color:var(--gold);">🌟 กิจกรรมที่ได้รับความสนใจมากที่สุด</h4>
+        <p style="margin:0; font-size:14px;"><strong>${popularAct.name}</strong> (สมัครแล้ว ${popularAct.count} ${popularAct.unit})</p>
+      </div>
+      
+      <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:16px;">
+        ${dashboardCards}
+      </div>
+     `;
+  } else {
+    const act = ACTIVITIES.find(a=>a.id===adminActiveTab);
+    const list = adminLists[act.id] || [];
+    const isTeam = act.mode==='team';
+
+    let filteredList = list;
+    if(adminSearchQuery.trim()){
+      const q = adminSearchQuery.trim().toLowerCase();
+      filteredList = list.filter(r => {
+        const idMatch = (r.id || '').toLowerCase().includes(q);
+        const nameMatch = (r.fullName || r.teamName || '').toLowerCase().includes(q);
+        const roomMatch = (r.room || '').toLowerCase().includes(q);
+        const gradeMatch = (r.grade || '').toLowerCase().includes(q);
+        const phoneMatch = (r.phone || '').toLowerCase().includes(q);
+        const memberMatch = Array.isArray(r.members) && r.members.some(m => m.toLowerCase().includes(q));
+        return idMatch || nameMatch || roomMatch || gradeMatch || phoneMatch || memberMatch;
+      });
+    }
+
+    filteredList = sortRegistrants(filteredList, adminSortBy);
+
+    adminBody.innerHTML = `
+      <p class="modal-eyebrow">แผงควบคุมสำหรับเจ้าหน้าที่</p>
+      <h3>รายชื่อผู้สมัคร</h3>
+      <div class="admin-tabs">
+        ${tabsHTML}
+      </div>
+      <div class="admin-toolbar">
+        <span class="count">สมัครแล้ว <strong>${list.length}</strong> / ${act.maxSeats} ${act.unit}</span>
+        <div class="admin-btns">
+          <button class="btn-tiny" id="exportBtn">ส่งออก CSV</button>
+          <button class="btn-tiny" id="printBtn">พิมพ์รายชื่อ</button>
+          <button class="btn-tiny danger" id="resetBtn">ล้างรายชื่อทั้งหมด</button>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; align-items:center;">
+        <div style="flex:1; min-width:180px;">
+          <input type="text" id="adminSearchInput" placeholder="🔍 ค้นหาชื่อ, รหัส, ห้อง..." value="${adminSearchQuery}" style="width:100%; background:var(--bg); border:1px solid var(--border-strong); color:var(--text); border-radius:var(--radius-sm); padding:8px 12px; font-size:13px;">
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <label for="adminSortSelect" style="font-size:12.5px; color:var(--text-mute); white-space:nowrap;">เรียงตาม:</label>
         <select id="adminSortSelect" style="background:var(--bg); border:1px solid var(--border-strong); color:var(--text); border-radius:var(--radius-sm); padding:8px 10px; font-size:12.5px; cursor:pointer;">
           <option value="time-asc" ${adminSortBy==='time-asc'?'selected':''}>⏰ เวลาสมัคร (เก่า → ใหม่)</option>
           <option value="time-desc" ${adminSortBy==='time-desc'?'selected':''}>⏰ เวลาสมัคร (ใหม่ → เก่า)</option>
@@ -1515,55 +1602,67 @@ function renderAdminPanel(){
       </table>`}
     </div>
   `;
+  } // END OF ELSE BLOCK
 
   adminBody.querySelectorAll('[data-tab]').forEach(btn=>{
     btn.addEventListener('click', ()=>{ adminActiveTab = btn.getAttribute('data-tab'); renderAdminPanel(); });
   });
-  const searchInput = document.getElementById('adminSearchInput');
-  if(searchInput){
-    searchInput.addEventListener('input', (e)=>{
-      adminSearchQuery = e.target.value;
-      renderAdminPanel();
-      const newSearchInput = document.getElementById('adminSearchInput');
-      if(newSearchInput){
-        newSearchInput.focus();
-        newSearchInput.setSelectionRange(adminSearchQuery.length, adminSearchQuery.length);
-      }
+  
+  if (adminActiveTab !== 'dashboard') {
+    const act = ACTIVITIES.find(a=>a.id===adminActiveTab);
+    const searchInput = document.getElementById('adminSearchInput');
+    if(searchInput){
+      searchInput.addEventListener('input', (e)=>{
+        adminSearchQuery = e.target.value;
+        renderAdminPanel();
+        const newSearchInput = document.getElementById('adminSearchInput');
+        if(newSearchInput){
+          newSearchInput.focus();
+          newSearchInput.setSelectionRange(adminSearchQuery.length, adminSearchQuery.length);
+        }
+      });
+    }
+    const sortSelect = document.getElementById('adminSortSelect');
+    if(sortSelect){
+      sortSelect.addEventListener('change', (e)=>{
+        adminSortBy = e.target.value;
+        renderAdminPanel();
+      });
+    }
+    adminBody.querySelectorAll('[data-sort-col]').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.getAttribute('data-sort-col');
+        if (col === 'id') {
+          adminSortBy = adminSortBy === 'id-asc' ? 'id-desc' : 'id-asc';
+        } else if (col === 'name') {
+          adminSortBy = adminSortBy === 'name-asc' ? 'name-desc' : 'name-asc';
+        } else if (col === 'grade') {
+          adminSortBy = adminSortBy === 'grade-asc' ? 'grade-desc' : 'grade-asc';
+        } else if (col === 'room') {
+          adminSortBy = adminSortBy === 'room-asc' ? 'room-desc' : 'room-asc';
+        } else if (col === 'time') {
+          adminSortBy = adminSortBy === 'time-asc' ? 'time-desc' : 'time-asc';
+        }
+        renderAdminPanel();
+      });
+    });
+    
+    const exportBtn = document.getElementById('exportBtn');
+    if (exportBtn) exportBtn.addEventListener('click', ()=>exportCSV(act.id));
+    
+    const printBtn = document.getElementById('printBtn');
+    if (printBtn) printBtn.addEventListener('click', ()=>window.print());
+    
+    const resetBtn = document.getElementById('resetBtn');
+    if (resetBtn) resetBtn.addEventListener('click', ()=>resetActivity(act.id));
+
+    adminBody.querySelectorAll('[data-del-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const regId = btn.getAttribute('data-del-id');
+        deleteSingleRegistrant(act.id, regId);
+      });
     });
   }
-  const sortSelect = document.getElementById('adminSortSelect');
-  if(sortSelect){
-    sortSelect.addEventListener('change', (e)=>{
-      adminSortBy = e.target.value;
-      renderAdminPanel();
-    });
-  }
-  adminBody.querySelectorAll('[data-sort-col]').forEach(th => {
-    th.addEventListener('click', () => {
-      const col = th.getAttribute('data-sort-col');
-      if (col === 'id') {
-        adminSortBy = adminSortBy === 'id-asc' ? 'id-desc' : 'id-asc';
-      } else if (col === 'name') {
-        adminSortBy = adminSortBy === 'name-asc' ? 'name-desc' : 'name-asc';
-      } else if (col === 'grade') {
-        adminSortBy = adminSortBy === 'grade-asc' ? 'grade-desc' : 'grade-asc';
-      } else if (col === 'room') {
-        adminSortBy = adminSortBy === 'room-asc' ? 'room-desc' : 'room-asc';
-      } else if (col === 'time') {
-        adminSortBy = adminSortBy === 'time-asc' ? 'time-desc' : 'time-asc';
-      }
-      renderAdminPanel();
-    });
-  });
-  document.getElementById('exportBtn').addEventListener('click', ()=>exportCSV(act.id));
-  document.getElementById('printBtn').addEventListener('click', ()=>window.print());
-  document.getElementById('resetBtn').addEventListener('click', ()=>resetActivity(act.id));
-  adminBody.querySelectorAll('[data-del-id]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const regId = btn.getAttribute('data-del-id');
-      deleteSingleRegistrant(act.id, regId);
-    });
-  });
 }
 
 /* =========================================================
@@ -1598,23 +1697,17 @@ document.getElementById('statusSearchBtn').addEventListener('click', async () =>
   statusResult.innerHTML = '<p style="text-align:center; color:var(--text-dim);">กำลังตรวจสอบ...</p>';
   
   try {
-    let found = null;
-    let foundAct = null;
-    let allData = [];
-    
-    const allRegistrantsData = await Promise.all(
-      ACTIVITIES.map(a => getRegistrants(a.id).then(list => ({ act: a, list })))
-    );
-    
-    for (const { act: a, list } of allRegistrantsData) {
-      const r = list.find(x => x.id === regId);
-      if(r){
-         found = r;
-         foundAct = a;
-         allData = list;
-         break;
-      }
+    const res = await fetch(`/api/status/${regId}`);
+    if (!res.ok) {
+       statusResult.innerHTML = '<div class="form-msg error show" style="margin:0;">ไม่พบข้อมูลการสมัครสำหรับรหัสอ้างอิงนี้</div>';
+       searchBtn.disabled = false;
+       searchBtn.textContent = 'ค้นหาข้อมูล';
+       return;
     }
+    
+    const data = await res.json();
+    const found = data.found;
+    const foundAct = ACTIVITIES.find(a => a.id === data.foundActId);
     
     if(!found){
       statusResult.innerHTML = '<div class="form-msg error show" style="margin:0;">ไม่พบข้อมูลการสมัครสำหรับรหัสอ้างอิงนี้</div>';
@@ -1643,20 +1736,25 @@ document.getElementById('statusSearchBtn').addEventListener('click', async () =>
            cancelBtn.disabled = true;
            cancelBtn.textContent = 'กำลังยกเลิก...';
            
-           const newList = allData.filter(x => x.id !== regId);
-           const saved = await saveRegistrants(foundAct.id, newList);
-           
-           if(saved){
-              activitiesState[foundAct.id] = newList;
-              renderActivities();
-              statusResult.innerHTML = `
-                <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:20px; text-align:center;">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" width="40" height="40" style="margin-bottom:10px;"><path d="M20 6L9 17l-5-5"/></svg>
-                  <h4 style="color:#065f46; margin:0 0 5px 0;">ยกเลิกการสมัครเรียบร้อยแล้ว</h4>
-                  <p style="color:#047857; margin:0; font-size:14px;">ขอบคุณที่แจ้งสละสิทธิ์เพื่อคืนที่นั่งให้เพื่อนๆ</p>
-                </div>
-              `;
-           } else {
+           try {
+             const cancelRes = await fetch('/api/cancel', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ activityId: foundAct.id, regId })
+             });
+             if (cancelRes.ok) {
+                fetchCounts();
+                statusResult.innerHTML = `
+                  <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:20px; text-align:center;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" width="40" height="40" style="margin-bottom:10px;"><path d="M20 6L9 17l-5-5"/></svg>
+                    <h4 style="color:#065f46; margin:0 0 5px 0;">ยกเลิกการสมัครเรียบร้อยแล้ว</h4>
+                    <p style="color:#047857; margin:0; font-size:14px;">ขอบคุณที่แจ้งสละสิทธิ์เพื่อคืนที่นั่งให้เพื่อนๆ</p>
+                  </div>
+                `;
+             } else {
+                throw new Error("Failed");
+             }
+           } catch(e) {
               statusResult.innerHTML = '<div class="form-msg error show" style="margin:0;">เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง</div>';
               cancelBtn.disabled = false;
               cancelBtn.textContent = 'ยกเลิกการสมัคร (สละสิทธิ์)';
