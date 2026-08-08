@@ -885,7 +885,7 @@ function renderRegForm(){
   let memberRowsHTML = '';
   if(isTeam){
     for(let i=0;i<act.teamMin;i++){
-      memberRowsHTML += `<div class="member-row"><input type="text" class="member-input" placeholder="ชื่อ-นามสกุล สมาชิกคนที่ ${i+1}">${i>=act.teamMin?'<button type="button" class="rm">✕</button>':''}</div>`;
+      memberRowsHTML += `<div class="member-row"><input type="text" class="member-input" placeholder="ชื่อ-นามสกุล (พร้อมคำนำหน้า) สมาชิกคนที่ ${i+1}">${i>=act.teamMin?'<button type="button" class="rm">✕</button>':''}</div>`;
     }
   }
   regBody.innerHTML = `
@@ -901,9 +901,9 @@ function renderRegForm(){
         <div class="error">กรุณากรอกชื่อทีม</div>
       </div>` : `
       <div class="field" data-field="fullName">
-        <label for="f_fullName">ชื่อ-นามสกุล <span class="req">*</span></label>
-        <input type="text" id="f_fullName" placeholder="ชื่อ-นามสกุล">
-        <div class="error">กรุณากรอกชื่อ-นามสกุล</div>
+        <label for="f_fullName">ชื่อ-นามสกุล (พร้อมคำนำหน้า) <span class="req">*</span></label>
+        <input type="text" id="f_fullName" placeholder="เช่น ด.ช. / ด.ญ. / นาย / นางสาว ชื่อ-นามสกุล">
+        <div class="error">กรุณากรอกชื่อ-นามสกุล (พร้อมคำนำหน้า)</div>
       </div>`}
 
       <div class="field" data-field="grade">
@@ -951,7 +951,7 @@ function renderRegForm(){
       if(current>=act.teamMax) return;
       const row = document.createElement('div');
       row.className='member-row';
-      row.innerHTML = `<input type="text" class="member-input" placeholder="ชื่อ-นามสกุล สมาชิกคนที่ ${current+1}"><button type="button" class="rm">✕</button>`;
+      row.innerHTML = `<input type="text" class="member-input" placeholder="ชื่อ-นามสกุล (พร้อมคำนำหน้า) สมาชิกคนที่ ${current+1}"><button type="button" class="rm">✕</button>`;
       row.querySelector('.rm').addEventListener('click', ()=>{ row.remove(); if(rows.querySelectorAll('.member-row').length<act.teamMax) addBtn.style.display=''; });
       rows.appendChild(row);
       if(rows.querySelectorAll('.member-row').length>=act.teamMax) addBtn.style.display='none';
