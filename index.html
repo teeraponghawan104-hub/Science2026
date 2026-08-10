@@ -423,8 +423,8 @@ body {
   .modal-sub { font-size: 0.95rem; }
   
   .admin-toolbar { flex-direction: column; align-items: stretch; gap: 0.8rem; }
-  .admin-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-  .btn-tiny { width: 100%; }
+  .admin-btns { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .btn-tiny { flex: 1 1 calc(50% - 0.5rem); }
 }
 
 /* 2. Tablet (481px - 768px) */
