@@ -846,8 +846,8 @@ const regBody = document.getElementById('regBody');
 
 function fieldHTML(f){
   return `<div class="field" data-field="${f.id}">
-    <label for="f_${f.id}">${f.label} ${f.required?'<span class="req">*</span>':''}</label>
-    <input type="text" id="f_${f.id}" placeholder="${f.placeholder||''}">
+    <label for="f_${f.id}">${f.label} <span class="req">*</span></label>
+    <input type="text" id="f_${f.id}" placeholder="${f.placeholder||''}" required>
     <div class="error">กรุณากรอกข้อมูลนี้</div>
   </div>`;
 }
@@ -868,7 +868,17 @@ function renderRegForm(){
   let memberRowsHTML = '';
   if(isTeam){
     for(let i=0;i<act.teamMin;i++){
-      memberRowsHTML += `<div class="member-row"><input type="text" class="member-input" placeholder="ชื่อ-นามสกุล (พร้อมคำนำหน้า) สมาชิกคนที่ ${i+1}">${i>=act.teamMin?'<button type="button" class="rm">✕</button>':''}</div>`;
+      memberRowsHTML += `<div class="member-row" style="display:flex; gap:10px; margin-bottom:10px;">
+        <select class="member-title" style="flex:0 0 100px; margin:0;" required>
+            <option value="">คำนำหน้า</option>
+            <option value="เด็กชาย">เด็กชาย</option>
+            <option value="เด็กหญิง">เด็กหญิง</option>
+            <option value="นาย">นาย</option>
+            <option value="นางสาว">นางสาว</option>
+        </select>
+        <input type="text" class="member-input" placeholder="ชื่อ-นามสกุล สมาชิกคนที่ ${i+1}" style="flex:1; margin:0;" required>
+        ${i>=act.teamMin?'<button type="button" class="rm" style="margin:0;">✕</button>':''}
+      </div>`;
     }
   }
   regBody.innerHTML = `
@@ -884,9 +894,18 @@ function renderRegForm(){
         <div class="error">กรุณากรอกชื่อทีม</div>
       </div>` : `
       <div class="field" data-field="fullName">
-        <label for="f_fullName">ชื่อ-นามสกุล (พร้อมคำนำหน้า) <span class="req">*</span></label>
-        <input type="text" id="f_fullName" placeholder="เช่น ด.ช. / ด.ญ. / นาย / นางสาว ชื่อ-นามสกุล">
-        <div class="error">กรุณากรอกชื่อ-นามสกุล (พร้อมคำนำหน้า)</div>
+        <label>คำนำหน้า และ ชื่อ-นามสกุล <span class="req">*</span></label>
+        <div style="display:flex; gap:10px;">
+          <select id="f_title" style="flex:0 0 110px; margin:0;" required>
+            <option value="">คำนำหน้า</option>
+            <option value="เด็กชาย">เด็กชาย</option>
+            <option value="เด็กหญิง">เด็กหญิง</option>
+            <option value="นาย">นาย</option>
+            <option value="นางสาว">นางสาว</option>
+          </select>
+          <input type="text" id="f_fullName" placeholder="ชื่อ-นามสกุล" style="flex:1; margin:0;" required>
+        </div>
+        <div class="error">กรุณาเลือกคำนำหน้า และกรอกชื่อ-นามสกุล</div>
       </div>`}
 
       <div class="field" data-field="grade">
@@ -934,7 +953,18 @@ function renderRegForm(){
       if(current>=act.teamMax) return;
       const row = document.createElement('div');
       row.className='member-row';
-      row.innerHTML = `<input type="text" class="member-input" placeholder="ชื่อ-นามสกุล (พร้อมคำนำหน้า) สมาชิกคนที่ ${current+1}"><button type="button" class="rm">✕</button>`;
+      row.style.display = 'flex';
+      row.style.gap = '10px';
+      row.style.marginBottom = '10px';
+      row.innerHTML = `<select class="member-title" style="flex:0 0 100px; margin:0;" required>
+          <option value="">คำนำหน้า</option>
+          <option value="เด็กชาย">เด็กชาย</option>
+          <option value="เด็กหญิง">เด็กหญิง</option>
+          <option value="นาย">นาย</option>
+          <option value="นางสาว">นางสาว</option>
+      </select>
+      <input type="text" class="member-input" placeholder="ชื่อ-นามสกุล สมาชิกคนที่ ${current+1}" style="flex:1; margin:0;" required>
+      <button type="button" class="rm" style="margin:0;">✕</button>`;
       row.querySelector('.rm').addEventListener('click', ()=>{ row.remove(); if(rows.querySelectorAll('.member-row').length<act.teamMax) addBtn.style.display=''; });
       rows.appendChild(row);
       if(rows.querySelectorAll('.member-row').length>=act.teamMax) addBtn.style.display='none';
@@ -963,8 +993,10 @@ async function handleSubmit(e){
     setFieldError(teamNameField, !ok); if(!ok) valid=false;
   } else {
     const nameField = document.querySelector('[data-field="fullName"]');
-    data.fullName = document.getElementById('f_fullName').value.trim();
-    const ok = !!data.fullName;
+    const titleVal = document.getElementById('f_title').value.trim();
+    const nameVal = document.getElementById('f_fullName').value.trim();
+    data.fullName = titleVal ? `${titleVal}${nameVal}` : nameVal;
+    const ok = !!titleVal && !!nameVal;
     setFieldError(nameField, !ok); if(!ok) valid=false;
   }
 
@@ -978,9 +1010,29 @@ async function handleSubmit(e){
 
   if(isTeam){
     const membersField = document.querySelector('[data-field="members"]');
-    const inputs = Array.from(document.querySelectorAll('.member-input'));
-    data.members = inputs.map(i=>i.value.trim()).filter(v=>v.length>0);
-    const ok = data.members.length>=act.teamMin;
+    const rows = Array.from(document.querySelectorAll('.member-row'));
+    let allMembersOk = true;
+    data.members = [];
+    rows.forEach(r => {
+      const t = r.querySelector('.member-title').value.trim();
+      const n = r.querySelector('.member-input').value.trim();
+      if(t && n) {
+        data.members.push(`${t}${n}`);
+      } else if (t || n) {
+        allMembersOk = false; // missing one part
+      }
+    });
+    // For required fields, every row must be complete, and total complete must meet min team size
+    // Also if any row is partially filled, it's invalid. 
+    // And actually, if they didn't fill all rows they added, it's invalid because all fields are required
+    // but maybe empty rows beyond teamMin are fine? We should just check if they are all valid and meet the count
+    const hasPartials = !allMembersOk;
+    // We require all visible rows to be filled out because they can remove rows if they don't want them
+    const allRowsFilled = rows.every(r => {
+        return r.querySelector('.member-title').value.trim() && r.querySelector('.member-input').value.trim();
+    });
+    
+    const ok = data.members.length >= act.teamMin && allRowsFilled;
     setFieldError(membersField, !ok); if(!ok) valid=false;
   }
 
@@ -992,7 +1044,9 @@ async function handleSubmit(e){
     const fEl = document.querySelector(`[data-field="${f.id}"]`);
     const val = document.getElementById('f_'+f.id).value.trim();
     data[f.id] = val;
-    if(f.required){ const ok=!!val; setFieldError(fEl, !ok); if(!ok) valid=false; }
+    const ok = !!val;
+    setFieldError(fEl, !ok); 
+    if(!ok) valid=false;
   }
 
   if(!valid) return;
