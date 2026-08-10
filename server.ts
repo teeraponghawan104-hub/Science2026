@@ -130,7 +130,11 @@ async function startServer() {
       
       // If it's a team activity, check if a team from the same room already exists
       if (isTeam && data.room) {
-         const roomExists = list.some((r: any) => r.room && r.room.toLowerCase() === data.room.toLowerCase());
+         const normalizeRoom = (str) => {
+             const m = str.match(/[\d\/]+/);
+             return m ? m[0] : str.replace(/\s+/g, '').toLowerCase();
+         };
+         const roomExists = list.some((r: any) => r.room && normalizeRoom(r.room) === normalizeRoom(data.room));
          if (roomExists) {
              return res.status(400).json({ error: "Room already registered" });
          }

@@ -798,8 +798,12 @@ function initRealtimeListener(){
            const tableWrap = document.querySelector('.admin-table-wrap');
            const scrollTop = tableWrap ? tableWrap.scrollTop : 0;
            const scrollLeft = tableWrap ? tableWrap.scrollLeft : 0;
+           
+           const overlayScroll = adminOverlay.scrollTop;
               
            renderAdminPanel();
+           
+           adminOverlay.scrollTop = overlayScroll;
               
            if (isSearchFocused) {
              const newSearchInput = document.getElementById('adminSearchInput');
