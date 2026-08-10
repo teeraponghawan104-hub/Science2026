@@ -789,14 +789,18 @@ function initRealtimeListener(){
            const data = await res.json();
            adminLists = data.allData;
            
-           // Preserve focus for search input
+           // Preserve focus for search input and scroll
            const activeEl = document.activeElement;
            const isSearchFocused = activeEl && activeEl.id === 'adminSearchInput';
            const searchInput = document.getElementById('adminSearchInput');
            const selectionStart = searchInput ? searchInput.selectionStart : null;
            
+           const tableWrap = document.querySelector('.admin-table-wrap');
+           const scrollTop = tableWrap ? tableWrap.scrollTop : 0;
+           const scrollLeft = tableWrap ? tableWrap.scrollLeft : 0;
+              
            renderAdminPanel();
-           
+              
            if (isSearchFocused) {
              const newSearchInput = document.getElementById('adminSearchInput');
              if (newSearchInput) {
@@ -805,6 +809,12 @@ function initRealtimeListener(){
                  newSearchInput.setSelectionRange(selectionStart, selectionStart);
                }
              }
+           }
+           
+           const newTableWrap = document.querySelector('.admin-table-wrap');
+           if (newTableWrap) {
+             newTableWrap.scrollTop = scrollTop;
+             newTableWrap.scrollLeft = scrollLeft;
            }
         }
       } catch (e) {
