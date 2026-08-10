@@ -1064,7 +1064,7 @@ async function handleSubmit(e){
     const hasPartials = !allMembersOk;
     // We require all visible rows to be filled out because they can remove rows if they don't want them
     const allRowsFilled = rows.every(r => {
-        return r.querySelector('.member-title').value.trim() && r.querySelector('.member-input').value.trim();
+        return r.querySelector('.member-title').value.trim() && r.querySelector('.member-firstname').value.trim() && r.querySelector('.member-lastname').value.trim();
     });
     
     const ok = data.members.length >= act.teamMin && allRowsFilled;
