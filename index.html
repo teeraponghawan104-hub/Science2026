@@ -891,16 +891,19 @@ function renderRegForm(){
   let memberRowsHTML = '';
   if(isTeam){
     for(let i=0;i<act.teamMin;i++){
-      memberRowsHTML += `<div class="member-row" style="display:flex; gap:10px; margin-bottom:10px;">
-        <select class="member-title" style="flex:0 0 100px; margin:0;" required>
+      memberRowsHTML += `<div class="member-row" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+        <select class="member-title" style="flex:1 1 100px; margin:0; min-width:100px; max-width: 140px;" required>
             <option value="">คำนำหน้า</option>
             <option value="เด็กชาย">เด็กชาย</option>
             <option value="เด็กหญิง">เด็กหญิง</option>
             <option value="นาย">นาย</option>
             <option value="นางสาว">นางสาว</option>
         </select>
-        <input type="text" class="member-input" placeholder="ชื่อ-นามสกุล สมาชิกคนที่ ${i+1}" style="flex:1; margin:0;" required>
-        ${i>=act.teamMin?'<button type="button" class="rm" style="margin:0;">✕</button>':''}
+        <div style="display:flex; flex:1 1 200px; gap:10px; margin:0;">
+          <input type="text" class="member-firstname" placeholder="ชื่อ (คนที่ ${i+1})" style="flex:1; min-width:0; margin:0;" required>
+          <input type="text" class="member-lastname" placeholder="นามสกุล" style="flex:1; min-width:0; margin:0;" required>
+          ${i>=act.teamMin?'<button type="button" class="rm" style="margin:0; padding:0 12px;">✕</button>':''}
+        </div>
       </div>`;
     }
   }
@@ -918,17 +921,20 @@ function renderRegForm(){
       </div>` : `
       <div class="field" data-field="fullName">
         <label>คำนำหน้า และ ชื่อ-นามสกุล <span class="req">*</span></label>
-        <div style="display:flex; gap:10px;">
-          <select id="f_title" style="flex:0 0 110px; margin:0;" required>
+        <div style="display:flex; flex-wrap:wrap; gap:10px;">
+          <select id="f_title" style="flex:1 1 110px; margin:0; min-width: 110px; max-width: 150px;" required>
             <option value="">คำนำหน้า</option>
             <option value="เด็กชาย">เด็กชาย</option>
             <option value="เด็กหญิง">เด็กหญิง</option>
             <option value="นาย">นาย</option>
             <option value="นางสาว">นางสาว</option>
           </select>
-          <input type="text" id="f_fullName" placeholder="ชื่อ-นามสกุล" style="flex:1; margin:0;" required>
+          <div style="display:flex; flex:1 1 200px; gap:10px; margin:0;">
+            <input type="text" id="f_firstName" placeholder="ชื่อ" style="flex:1; min-width:0; margin:0;" required>
+            <input type="text" id="f_lastName" placeholder="นามสกุล" style="flex:1; min-width:0; margin:0;" required>
+          </div>
         </div>
-        <div class="error">กรุณาเลือกคำนำหน้า และกรอกชื่อ-นามสกุล</div>
+        <div class="error">กรุณาเลือกคำนำหน้า กรอกชื่อ และนามสกุลให้ครบถ้วน</div>
       </div>`}
 
       <div class="field" data-field="grade">
@@ -977,17 +983,21 @@ function renderRegForm(){
       const row = document.createElement('div');
       row.className='member-row';
       row.style.display = 'flex';
+      row.style.flexWrap = 'wrap';
       row.style.gap = '10px';
       row.style.marginBottom = '10px';
-      row.innerHTML = `<select class="member-title" style="flex:0 0 100px; margin:0;" required>
+      row.innerHTML = `<select class="member-title" style="flex:1 1 100px; margin:0; min-width:100px; max-width: 140px;" required>
           <option value="">คำนำหน้า</option>
           <option value="เด็กชาย">เด็กชาย</option>
           <option value="เด็กหญิง">เด็กหญิง</option>
           <option value="นาย">นาย</option>
           <option value="นางสาว">นางสาว</option>
       </select>
-      <input type="text" class="member-input" placeholder="ชื่อ-นามสกุล สมาชิกคนที่ ${current+1}" style="flex:1; margin:0;" required>
-      <button type="button" class="rm" style="margin:0;">✕</button>`;
+      <div style="display:flex; flex:1 1 200px; gap:10px; margin:0;">
+        <input type="text" class="member-firstname" placeholder="ชื่อ (คนที่ ${current+1})" style="flex:1; min-width:0; margin:0;" required>
+        <input type="text" class="member-lastname" placeholder="นามสกุล" style="flex:1; min-width:0; margin:0;" required>
+        <button type="button" class="rm" style="margin:0; padding:0 12px;">✕</button>
+      </div>`;
       row.querySelector('.rm').addEventListener('click', ()=>{ row.remove(); if(rows.querySelectorAll('.member-row').length<act.teamMax) addBtn.style.display=''; });
       rows.appendChild(row);
       if(rows.querySelectorAll('.member-row').length>=act.teamMax) addBtn.style.display='none';
@@ -1017,9 +1027,10 @@ async function handleSubmit(e){
   } else {
     const nameField = document.querySelector('[data-field="fullName"]');
     const titleVal = document.getElementById('f_title').value.trim();
-    const nameVal = document.getElementById('f_fullName').value.trim();
-    data.fullName = titleVal ? `${titleVal}${nameVal}` : nameVal;
-    const ok = !!titleVal && !!nameVal;
+    const fnameVal = document.getElementById('f_firstName').value.trim();
+    const lnameVal = document.getElementById('f_lastName').value.trim();
+    data.fullName = titleVal ? `${titleVal}${fnameVal} ${lnameVal}` : `${fnameVal} ${lnameVal}`;
+    const ok = !!titleVal && !!fnameVal && !!lnameVal;
     setFieldError(nameField, !ok); if(!ok) valid=false;
   }
 
@@ -1038,10 +1049,11 @@ async function handleSubmit(e){
     data.members = [];
     rows.forEach(r => {
       const t = r.querySelector('.member-title').value.trim();
-      const n = r.querySelector('.member-input').value.trim();
-      if(t && n) {
-        data.members.push(`${t}${n}`);
-      } else if (t || n) {
+      const fn = r.querySelector('.member-firstname').value.trim();
+      const ln = r.querySelector('.member-lastname').value.trim();
+      if(t && fn && ln) {
+        data.members.push(`${t}${fn} ${ln}`);
+      } else if (t || fn || ln) {
         allMembersOk = false; // missing one part
       }
     });
