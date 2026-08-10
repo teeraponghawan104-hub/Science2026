@@ -121,12 +121,20 @@ async function startServer() {
 
   // Register
   app.post("/api/register", async (req, res) => {
-    const { activityId, data } = req.body;
+    const { activityId, data, isTeam } = req.body;
     
     try {
       const docRef = doc(db, "registrations", activityId);
       const snap = await getDoc(docRef);
       const list = snap.exists() ? snap.data().list || [] : [];
+      
+      // If it's a team activity, check if a team from the same room already exists
+      if (isTeam && data.room) {
+         const roomExists = list.some((r: any) => r.room && r.room.toLowerCase() === data.room.toLowerCase());
+         if (roomExists) {
+             return res.status(400).json({ error: "Room already registered" });
+         }
+      }
       
       const entry = {
         id: activityId.slice(0,3).toUpperCase()+'-'+Date.now().toString(36).toUpperCase(),
