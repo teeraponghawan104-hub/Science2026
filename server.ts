@@ -128,15 +128,18 @@ async function startServer() {
       const snap = await getDoc(docRef);
       const list = snap.exists() ? snap.data().list || [] : [];
       
-      // If it's a team activity, check if a team from the same room already exists
-      if (isTeam && data.room) {
-         const normalizeRoom = (str) => {
-             const m = str.match(/[\d\/]+/);
-             return m ? m[0] : str.replace(/\s+/g, '').toLowerCase();
-         };
-         const roomExists = list.some((r: any) => r.room && normalizeRoom(r.room) === normalizeRoom(data.room));
-         if (roomExists) {
-             return res.status(400).json({ error: "Room already registered" });
+      // Check room limits (for teams typically 1, for individuals it varies)
+      if (data.room) {
+         const limit = req.body.roomLimit || (isTeam ? 1 : 0);
+         if (limit > 0) {
+             const normalizeRoom = (str) => {
+                 const m = str.match(/[\d\/]+/);
+                 return m ? m[0] : str.replace(/\s+/g, '').toLowerCase();
+             };
+             const roomCount = list.filter((r: any) => r.room && normalizeRoom(r.room) === normalizeRoom(data.room)).length;
+             if (roomCount >= limit) {
+                 return res.status(400).json({ error: `โควตาห้องนี้เต็มแล้ว (สูงสุด ${limit} ${isTeam ? 'ทีม' : 'คน'}/ห้อง)` });
+             }
          }
       }
       

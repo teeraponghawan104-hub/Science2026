@@ -648,14 +648,14 @@ const ACTIVITIES = [
     extraFields:[]
   },
   {
-    id:'painting', name:'วาดภาพระบายสี', mode:'individual', unit:'คน', maxSeats:36,
+    id:'painting', name:'วาดภาพระบายสี', mode:'individual', unit:'คน', maxSeats:36, roomLimit:3,
     period:'ช่วงเช้า (ใช้เวลา 3 ชั่วโมง)',
     icon:'palette',
     details:['ใช้กระดาษ 100 ปอนด์ ขนาด F4 (โรงเรียนจัดเตรียมให้)','ห้ามนำโทรศัพท์มือถือเข้า และห้ามดูภาพต้นแบบทุกชนิด','ห้องละไม่เกิน 3 คน (1 คน ต่อ 1 ภาพ)'],
     extraFields:[]
   },
   {
-    id:'essay', name:'เขียนเรียงความ', mode:'individual', unit:'คน', maxSeats:24,
+    id:'essay', name:'เขียนเรียงความ', mode:'individual', unit:'คน', maxSeats:24, roomLimit:2,
     period:'ช่วงเช้า (ใช้เวลา 1 ชั่วโมง)',
     icon:'pencil',
     details:['โรงเรียนจัดเตรียมกระดาษมีเส้นให้สำหรับผู้เข้าสอบ','ห้องละไม่เกิน 2 คน'],
@@ -1149,7 +1149,7 @@ async function handleSubmit(e){
     const regRes = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ activityId: act.id, data, isTeam })
+      body: JSON.stringify({ activityId: act.id, data, isTeam, roomLimit: act.roomLimit })
     });
       
     if (regRes.ok) {
