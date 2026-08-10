@@ -356,7 +356,7 @@ body.past-deadline .closed-banner{display:inline-flex; align-items:center; gap:8
 }
 .admin-table-wrap{max-height:340px; overflow-y:auto; overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid var(--border); border-radius:var(--radius-sm); max-width:100%;}
 table{width:100%; border-collapse:collapse; font-size:12.5px;}
-th{text-align:left; padding:10px 12px; color:var(--text-mute); font-weight:500; background:var(--surface-2); position:-webkit-sticky; position:sticky; top:0; white-space:nowrap; z-index:1;}
+th{text-align:left; padding:10px 12px; color:var(--text-mute); font-weight:500; background:var(--surface-2); position:-webkit-sticky; position:sticky; top:0; white-space:nowrap; z-index:1; transform: translateZ(0); -webkit-transform: translateZ(0);}
 td{padding:10px 12px; border-top:1px solid var(--border); color:var(--text-dim); white-space:nowrap;}
 .admin-empty{padding:30px; text-align:center; color:var(--text-mute); font-size:13px;}
 
@@ -787,6 +787,15 @@ function initRealtimeListener(){
         });
         if (res.ok) {
            const data = await res.json();
+           const newDataStr = JSON.stringify(data.allData);
+           if (window._lastAdminDataStr === newDataStr) return;
+           
+           if (window._isAdminInteracting) {
+              // skip render this tick if user is interacting, data will be updated next tick if they stop
+              return;
+           }
+           
+           window._lastAdminDataStr = newDataStr;
            adminLists = data.allData;
            
            // Preserve focus for search input and scroll
@@ -1385,6 +1394,15 @@ document.getElementById('adminOpenBtn').addEventListener('click', ()=>{
 });
 document.getElementById('adminCloseBtn').addEventListener('click', ()=>adminOverlay.classList.remove('open'));
 adminOverlay.addEventListener('click', (e)=>{ if(e.target===adminOverlay) adminOverlay.classList.remove('open'); });
+adminOverlay.addEventListener('touchstart', () => { window._isAdminInteracting = true; }, {passive:true});
+adminOverlay.addEventListener('touchend', () => { setTimeout(() => window._isAdminInteracting = false, 1500); }, {passive:true});
+adminOverlay.addEventListener('mousedown', () => { window._isAdminInteracting = true; });
+adminOverlay.addEventListener('mouseup', () => { setTimeout(() => window._isAdminInteracting = false, 500); });
+adminOverlay.addEventListener('wheel', () => { 
+  window._isAdminInteracting = true; 
+  clearTimeout(window._wheelTimeout);
+  window._wheelTimeout = setTimeout(() => window._isAdminInteracting = false, 1000); 
+}, {passive:true});
 
 function renderAdminGate(){
   adminBody.innerHTML = `
