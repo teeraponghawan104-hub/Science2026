@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0a0e26">
+<link rel="manifest" href="/manifest.json">
 <title>สัปดาห์วันวิทยาศาสตร์ 2569 | ลงทะเบียนแข่งขัน</title>
 <link rel="icon" type="image/png" href="/123.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2137,6 +2139,16 @@ loadAll().then(() => {
 });
 tickCountdown();
 setInterval(tickCountdown, 1000);
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').then(registration => {
+      console.log('SW registered: ', registration);
+    }).catch(registrationError => {
+      console.log('SW registration failed: ', registrationError);
+    });
+  });
+}
 </script>
 </body>
 </html>
