@@ -668,7 +668,7 @@ const ACTIVITIES = [
     extraFields:[]
   },
   {
-    id:'quiz', name:'ตอบปัญหาทางวิทยาศาสตร์', mode:'team', unit:'ทีม', maxSeats:12,
+    id:'quiz', name:'ตอบปัญหาทางวิทยาศาสตร์', mode:'team', unit:'ทีม', maxSeats:9999, unlimited: true,
     teamMin:3, teamMax:3,
     period:'ช่วงเช้า เวลา 1 ชั่วโมง',
     icon:'quiz',
@@ -727,7 +727,8 @@ async function fetchCounts(){
 /* =========================================================
    RENDER — ACTIVITY GRID
    ========================================================= */
-function statusFor(count, max){
+function statusFor(count, max, unlimited){
+  if(unlimited) return {pct: 0, cls: 'status-open', label: 'เปิดรับสมัคร'};
   const pct = Math.min(100, Math.round((count/max)*100));
   let cls='status-open', label='เปิดรับสมัคร';
   if(count>=max){ cls='status-full'; label='เต็มแล้ว'; }
@@ -740,8 +741,8 @@ function renderActivities(){
   const deadlinePassed = isPastDeadline();
   grid.innerHTML = ACTIVITIES.map(act=>{
     const count = activitiesState[act.id] || 0;
-    const {pct, cls, label} = statusFor(count, act.maxSeats);
-    const full = count >= act.maxSeats;
+    const {pct, cls, label} = statusFor(count, act.maxSeats, act.unlimited);
+    const full = !act.unlimited && count >= act.maxSeats;
     const disabled = full || deadlinePassed;
     const ringColor = cls==='status-full' ? 'var(--danger)' : (cls==='status-low' ? 'var(--gold)' : 'var(--teal)');
     const btnLabel = deadlinePassed ? 'ปิดรับสมัครแล้ว' : (full ? 'ที่นั่งเต็มแล้ว' : 'ลงทะเบียน');
@@ -751,7 +752,7 @@ function renderActivities(){
         <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ICONS[act.icon]}</svg></div>
         <div class="gauge-wrap">
           <div class="gauge-ring" style="--pct:${pct}; --ring-color:${ringColor};"></div>
-          <div class="gauge-hole"><div class="n">${count}/${act.maxSeats}</div><div class="d">${act.unit}</div></div>
+          <div class="gauge-hole"><div class="n">${count}${act.unlimited ? '' : '/' + act.maxSeats}</div><div class="d">${act.unit}</div></div>
         </div>
       </div>
       <h3>${act.name}</h3>
@@ -762,7 +763,7 @@ function renderActivities(){
       </div>
       <ul class="card-details">${act.details.map(d=>`<li>${d}</li>`).join('')}</ul>
       <div class="card-footer">
-        <span class="seats-left">เหลือ <strong>${Math.max(0, act.maxSeats-count)}</strong> ${act.unit}</span>
+        <span class="seats-left">${act.unlimited ? '<strong>ไม่จำกัด</strong>' : `เหลือ <strong>${Math.max(0, act.maxSeats-count)}</strong> ${act.unit}`}</span>
         <button class="btn-card" ${disabled?'disabled':''} data-open="${act.id}">${btnLabel}</button>
       </div>
     </div>`;
@@ -1105,7 +1106,7 @@ async function handleSubmit(e){
   }
 
   const latestCount = activitiesState[act.id] || 0;
-  if(latestCount >= act.maxSeats){
+  if(!act.unlimited && latestCount >= act.maxSeats){
     msgEl.className='form-msg full show';
     msgEl.textContent='ขออภัย ที่นั่งกิจกรรมนี้เต็มแล้ว';
     submitBtn.disabled=false; submitBtn.textContent='ยืนยันการลงทะเบียน';
@@ -1771,21 +1772,23 @@ function renderAdminPanel(){
   if (adminActiveTab === 'dashboard') {
      let dashboardCards = ACTIVITIES.map(act => {
         const count = adminLists[act.id] ? adminLists[act.id].length : 0;
-        const pct = Math.min(100, Math.round((count / act.maxSeats) * 100));
+        const pct = act.unlimited ? 0 : Math.min(100, Math.round((count / act.maxSeats) * 100));
         let color = '#10b981'; // Green
-        if (pct >= 100) color = '#ef4444'; // Red
-        else if (pct >= 80) color = '#f59e0b'; // Orange
+        if (!act.unlimited && pct >= 100) color = '#ef4444'; // Red
+        else if (!act.unlimited && pct >= 80) color = '#f59e0b'; // Orange
         
         return `
           <div style="background:var(--bg-2); border:1px solid var(--border-strong); border-radius:12px; padding:16px;">
             <h4 style="margin:0 0 10px 0; font-size:15px;">${act.name}</h4>
             <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:var(--text-mute);">
-              <span>รับ ${act.maxSeats} ${act.unit}</span>
+              <span>${act.unlimited ? 'รับไม่จำกัด' : `รับ ${act.maxSeats} ${act.unit}`}</span>
               <span style="color:${color}; font-weight:600;">สมัครแล้ว ${count}</span>
             </div>
+            ${act.unlimited ? '' : `
             <div style="width:100%; background:var(--bg); border-radius:4px; height:8px; overflow:hidden;">
               <div style="height:100%; width:${pct}%; background:${color};"></div>
-            </div>
+            </div>`}
+
           </div>
         `;
      }).join('');
@@ -1910,7 +1913,7 @@ function renderAdminPanel(){
         ${tabsHTML}
       </div>
       <div class="admin-toolbar">
-        <span class="count">สมัครแล้ว <strong>${list.length}</strong> / ${act.maxSeats} ${act.unit}</span>
+        <span class="count">สมัครแล้ว <strong>${list.length}</strong>${act.unlimited ? '' : ` / ${act.maxSeats}`} ${act.unit}</span>
         <div class="admin-btns">
           <button class="btn-tiny" id="exportBtn">ส่งออก CSV</button>
           <button class="btn-tiny" id="printBtn">พิมพ์รายชื่อ</button>
