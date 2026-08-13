@@ -121,6 +121,11 @@ async function startServer() {
 
   // Register
   app.post("/api/register", async (req, res) => {
+    const DEADLINE = new Date('2026-08-13T23:59:59+07:00');
+    if (Date.now() > DEADLINE.getTime()) {
+        return res.status(400).json({ error: "หมดเวลารับสมัครแล้ว" });
+    }
+    
     const { activityId, data, isTeam } = req.body;
     
     try {
