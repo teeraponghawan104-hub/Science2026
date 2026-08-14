@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const dateStr = "2026-08-14T15:30:00+07:00"; // Aug 14 is the current date in Thailand time
+const dateStr = "2026-08-14T18:00:00+07:00"; // Aug 14 at 18:00 Thailand time
 
 // Patch index.html
 let html = fs.readFileSync('index.html', 'utf-8');
