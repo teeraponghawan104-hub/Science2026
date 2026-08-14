@@ -121,7 +121,7 @@ async function startServer() {
 
   // Register
   app.post("/api/register", async (req, res) => {
-    const DEADLINE = new Date('2026-08-13T23:59:59+07:00');
+    const DEADLINE = new Date('2026-08-14T15:30:00+07:00');
     if (Date.now() > DEADLINE.getTime()) {
         return res.status(400).json({ error: "หมดเวลารับสมัครแล้ว" });
     }
@@ -262,7 +262,10 @@ async function startServer() {
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: { 
+        middlewareMode: true,
+        hmr: process.env.DISABLE_HMR === 'true' ? false : { clientPort: 443, protocol: 'wss' }
+      },
       appType: "spa",
     });
     app.use(vite.middlewares);
