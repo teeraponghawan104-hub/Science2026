@@ -1656,7 +1656,7 @@ function printAllAnnouncements() {
 
     ACTIVITIES.forEach((act, index) => {
       const rawList = adminLists[act.id] || [];
-      const list = typeof sortRegistrants === 'function' ? sortRegistrants(rawList, adminSortBy) : rawList;
+      const list = typeof sortRegistrants === 'function' ? sortRegistrants(rawList, 'room-asc') : rawList;
       const isTeam = act.mode === 'team' || act.id === 'recycle';
       
       const pageBreakStyle = index > 0 ? 'page-break-before: always;' : '';
@@ -1696,9 +1696,11 @@ function printAllAnnouncements() {
     html += `
     <div style="margin-top:40px; text-align:right; font-family:'Sarabun', sans-serif; font-size:14pt; padding-right:50px;">
       <p style="margin-bottom:40px;">ประกาศ ณ วันที่ ${today}</p>
-      <p style="margin:5px 0;">ลงชื่อ ...........................................</p>
-      <p style="margin:5px 0;">(...........................................)</p>
-      <p style="margin:5px 0;">หัวหน้ากลุ่มสาระการเรียนรู้วิทยาศาสตร์และเทคโนโลยี</p>
+      <div style="width:380px; margin:0 0 0 auto; text-align:center;">
+        <p style="margin:5px 0;">ลงชื่อ ...........................................</p>
+        <p style="margin:5px 0;">(...........................................)</p>
+        <p style="margin:5px 0;">หัวหน้ากลุ่มสาระการเรียนรู้วิทยาศาสตร์และเทคโนโลยี</p>
+      </div>
     </div>`;
     
     const printSection = document.getElementById('printSection');
