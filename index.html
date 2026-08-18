@@ -1518,7 +1518,7 @@ function printRegistrants(actId) {
     let html = `<div class="print-header">รายชื่อผู้สมัคร: ${act.name}<br><span style="font-size:14pt; font-weight:normal; color:#444;">Woraluck Science Fair 2026</span></div>`;
     html += `<table><thead><tr>
       <th class="print-nowrap">รหัส</th>
-      <th>${isTeam? (act.id==='recycle'?'ชื่อ-นามสกุล / ชื่อทีม':'ชื่อทีม') : 'ชื่อ-นามสกุล'}</th>
+      <th>${act.mode==='team' ? 'ชื่อทีม' : 'ชื่อ-สกุล'}</th>
       <th class="print-nowrap">ระดับชั้น</th>
       <th class="print-nowrap">ห้อง</th>
       ${isTeam?'<th style="width:25%">สมาชิก</th>':''}
@@ -1583,7 +1583,7 @@ function exportCSV(actId){
   const headerMap = {
     id: 'รหัส',
     teamName: 'ชื่อทีม',
-    fullName: 'ชื่อ-นามสกุล',
+    fullName: 'ชื่อ-สกุล',
     grade: 'ระดับชั้น',
     room: 'ห้อง',
     members: 'รายชื่อสมาชิก',
@@ -1962,7 +1962,7 @@ function renderAdminPanel(){
           <option value="room-asc" ${adminSortBy==='room-asc'?'selected':''}>🏫 ห้องเรียน (น้อย → มาก)</option>
           <option value="room-desc" ${adminSortBy==='room-desc'?'selected':''}>🏫 ห้องเรียน (มาก → น้อย)</option>
           <option value="grade-asc" ${adminSortBy==='grade-asc'?'selected':''}>🎓 ระดับชั้น</option>
-          <option value="name-asc" ${adminSortBy==='name-asc'?'selected':''}>👤 ชื่อ-นามสกุล / ทีม (ก-ฮ)</option>
+          <option value="name-asc" ${adminSortBy==='name-asc'?'selected':''}>👤 ชื่อ-สกุล / ทีม (ก-ฮ)</option>
           <option value="id-asc" ${adminSortBy==='id-asc'?'selected':''}>🆔 รหัสผู้สมัคร</option>
         </select>
       </div>
@@ -1972,7 +1972,7 @@ function renderAdminPanel(){
       <table>
         <thead><tr>
           <th data-sort-col="id" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">รหัส${getSortIndicator('id')}</th>
-          <th data-sort-col="name" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">${isTeam? (act.id==='recycle'?'ชื่อ-นามสกุล / ชื่อทีม':'ชื่อทีม') : 'ชื่อ-นามสกุล'}${getSortIndicator('name')}</th>
+          <th data-sort-col="name" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">${act.mode==='team' ? 'ชื่อทีม' : 'ชื่อ-สกุล'}${getSortIndicator('name')}</th>
           <th data-sort-col="grade" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">ระดับชั้น${getSortIndicator('grade')}</th>
           <th data-sort-col="room" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">ห้อง${getSortIndicator('room')}</th>
           ${isTeam?'<th>สมาชิก</th>':''}
@@ -2193,7 +2193,7 @@ window.openAdminEditModal = function(activityId, regId) {
   if(isTeam) {
     htmlStr += `
       <div class="field" data-field="teamName">
-        <label>${act.id==='recycle' ? 'ชื่อผู้ประกวด / ชื่อทีม' : 'ชื่อทีม'} <span class="req">*</span></label>
+        <label>${act.mode==='team' ? 'ชื่อทีม' : 'ชื่อ-สกุล'} <span class="req">*</span></label>
         <input type="text" id="f_admin_teamName" value="${r ? (r.teamName || r.fullName || '') : ''}">
       </div>
     `;
@@ -2209,7 +2209,7 @@ window.openAdminEditModal = function(activityId, regId) {
     }
     htmlStr += `
       <div class="field" data-field="name">
-        <label>ชื่อ-นามสกุล <span class="req">*</span></label>
+        <label>ชื่อ-สกุล <span class="req">*</span></label>
         <div style="display:flex; gap:10px;">
           <select id="f_admin_title" style="flex:0 0 100px;">
             <option value="">คำนำหน้า</option>
