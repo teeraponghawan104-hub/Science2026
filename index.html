@@ -466,6 +466,8 @@ body {
   .grid { grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 2rem; }
 }
 
+.print-only { display: none; }
+
 @media print {
   @page { size: A4 landscape; margin: 10mm; }
   html, body { background: #fff !important; color: #000 !important; margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: none !important; }
@@ -474,11 +476,11 @@ body {
   
   #printSection { display: block !important; position: static !important; width: 100% !important; max-width: none !important; padding: 0 !important; margin: 0 !important; }
   
-  table { border-collapse: collapse !important; width: 100% !important; max-width: 100% !important; page-break-inside: auto; margin-top: 15px; table-layout: auto !important; }
+  table { border-collapse: collapse !important; width: 100% !important; max-width: 100% !important; page-break-inside: auto; margin-top: 15px; table-layout: fixed !important; }
   tr { page-break-inside: avoid; page-break-after: auto; }
-  th, td { border: 1px solid #000 !important; padding: 6px !important; font-size: 10pt !important; color: #000 !important; text-align: left; background: none !important; white-space: normal !important; word-break: normal !important; }
+  th, td { border: 1px solid #000 !important; padding: 5px !important; font-size: 9pt !important; color: #000 !important; text-align: left; background: none !important; white-space: normal !important; word-break: break-word !important; overflow-wrap: break-word !important; }
   
-  .print-nowrap { white-space: nowrap !important; }
+  .print-nowrap { white-space: nowrap !important; width: 1% !important; }
   .print-header { display: block !important; font-size: 16pt; font-weight: bold; text-align: center; margin-bottom: 10px; color: #000; }
 }
 
