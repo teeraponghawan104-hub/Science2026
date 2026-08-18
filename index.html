@@ -1513,12 +1513,12 @@ function printRegistrants(actId) {
     if (!act) return;
     const rawList = adminLists[actId] || [];
     const list = typeof sortRegistrants === 'function' ? sortRegistrants(rawList, adminSortBy) : rawList;
-    const isTeam = act.mode === 'team';
+    const isTeam = act.mode === 'team' || act.id === 'recycle';
     
     let html = `<div class="print-header">รายชื่อผู้สมัคร: ${act.name}<br><span style="font-size:14pt; font-weight:normal; color:#444;">Woraluck Science Fair 2026</span></div>`;
     html += `<table><thead><tr>
       <th class="print-nowrap">รหัส</th>
-      <th>${isTeam?'ชื่อทีม':'ชื่อ-นามสกุล'}</th>
+      <th>${isTeam? (act.id==='recycle'?'ชื่อ-นามสกุล / ชื่อทีม':'ชื่อทีม') : 'ชื่อ-นามสกุล'}</th>
       <th class="print-nowrap">ระดับชั้น</th>
       <th class="print-nowrap">ห้อง</th>
       ${isTeam?'<th style="width:25%">สมาชิก</th>':''}
@@ -1538,7 +1538,7 @@ function printRegistrants(actId) {
         
         html += `<tr>
           <td class="print-nowrap">${r.id}</td>
-          <td><strong>${isTeam ? r.teamName : r.fullName}</strong></td>
+          <td><strong>${isTeam ? (r.teamName || r.fullName) : r.fullName}</strong></td>
           <td class="print-nowrap">${r.grade||''}</td>
           <td class="print-nowrap">${r.room||''}</td>
           ${isTeam ? `<td>${membersStr}</td>` : ''}
@@ -1575,7 +1575,7 @@ function exportCSV(actId){
     if (!act) return;
     const rawList = adminLists[actId] || [];
   const list = typeof sortRegistrants === 'function' ? sortRegistrants(rawList, adminSortBy) : rawList;
-  const isTeam = act.mode === 'team';
+  const isTeam = act.mode === 'team' || act.id === 'recycle';
   const cols = isTeam
     ? ['id','teamName','grade','room','members','phone', ...act.extraFields.map(f=>f.id), 'timestamp']
     : ['id','fullName','grade','room','phone', ...act.extraFields.map(f=>f.id), 'timestamp'];
@@ -1599,7 +1599,7 @@ function exportCSV(actId){
 
   list.forEach(r=>{
     rows.push(cols.map(c=>{
-      let v = r[c];
+      let v = c === 'teamName' ? (r.teamName || r.fullName) : r[c];
       if(c==='members' && Array.isArray(v)) v = v.join(' / ');
       if(c==='timestamp' && v) {
         try { v = new Date(v).toLocaleString('th-TH'); } catch(e){}
@@ -1842,7 +1842,7 @@ function renderAdminPanel(){
              fullRoom = 'ม.' + gNum + '/' + roomNum;
            }
          }
-         const isTeamAct = ACTIVITIES.find(a => a.id === actId)?.mode === 'team';
+         const isTeamAct = ['team'].includes(ACTIVITIES.find(a => a.id === actId)?.mode) || actId === 'recycle';
          const increment = (isTeamAct && Array.isArray(r.members)) ? Math.max(1, r.members.length) : 1;
          
          if (!roomStats[fullRoom]) roomStats[fullRoom] = { total: 0, activities: {} };
@@ -1916,7 +1916,7 @@ function renderAdminPanel(){
   } else {
     const act = ACTIVITIES.find(a=>a.id===adminActiveTab);
     const list = adminLists[act.id] || [];
-    const isTeam = act.mode==='team';
+    const isTeam = act.mode==='team' || act.id==='recycle';
 
     let filteredList = list;
     if(adminSearchQuery.trim()){
@@ -1972,7 +1972,7 @@ function renderAdminPanel(){
       <table>
         <thead><tr>
           <th data-sort-col="id" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">รหัส${getSortIndicator('id')}</th>
-          <th data-sort-col="name" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">${isTeam?'ชื่อทีม':'ชื่อ-นามสกุล'}${getSortIndicator('name')}</th>
+          <th data-sort-col="name" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">${isTeam? (act.id==='recycle'?'ชื่อ-นามสกุล / ชื่อทีม':'ชื่อทีม') : 'ชื่อ-นามสกุล'}${getSortIndicator('name')}</th>
           <th data-sort-col="grade" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">ระดับชั้น${getSortIndicator('grade')}</th>
           <th data-sort-col="room" style="cursor:pointer; user-select:none;" title="คลิกเพื่อเรียง">ห้อง${getSortIndicator('room')}</th>
           ${isTeam?'<th>สมาชิก</th>':''}
@@ -1984,7 +1984,7 @@ function renderAdminPanel(){
         <tbody>
           ${filteredList.map(r=>`<tr>
             <td>${r.id}</td>
-            <td><strong>${isTeam? r.teamName : r.fullName}</strong></td>
+            <td><strong>${isTeam? (r.teamName || r.fullName) : r.fullName}</strong></td>
             <td>${r.grade||''}</td>
             <td>${r.room||''}</td>
             ${isTeam?`<td>${(r.members||[]).join(', ')}</td>`:''}
@@ -2173,7 +2173,7 @@ document.getElementById('statusSearchBtn').addEventListener('click', async () =>
 window.openAdminEditModal = function(activityId, regId) {
   const act = ACTIVITIES.find(a => a.id === activityId);
   if(!act) return;
-  const isTeam = act.mode === 'team';
+  const isTeam = act.mode === 'team' || act.id === 'recycle';
   const list = adminLists[activityId] || [];
   let r = regId ? list.find(x => x.id === regId) : null;
   const isEdit = !!r;
@@ -2193,8 +2193,8 @@ window.openAdminEditModal = function(activityId, regId) {
   if(isTeam) {
     htmlStr += `
       <div class="field" data-field="teamName">
-        <label>ชื่อทีม <span class="req">*</span></label>
-        <input type="text" id="f_admin_teamName" value="${r ? (r.teamName || '') : ''}">
+        <label>${act.id==='recycle' ? 'ชื่อผู้ประกวด / ชื่อทีม' : 'ชื่อทีม'} <span class="req">*</span></label>
+        <input type="text" id="f_admin_teamName" value="${r ? (r.teamName || r.fullName || '') : ''}">
       </div>
     `;
   } else {
@@ -2246,9 +2246,9 @@ window.openAdminEditModal = function(activityId, regId) {
 
   if(isTeam) {
     let membersHtml = '';
-    const memList = r && Array.isArray(r.members) ? r.members : Array(act.teamMin).fill('');
+    const memList = r && Array.isArray(r.members) ? r.members : Array(act.teamMin || 0).fill('');
     memList.forEach((m, idx) => {
-      const isReq = idx < act.teamMin;
+      const isReq = idx < (act.teamMin || 0);
       let title = '', fname = '', lname = '';
       if(m) {
         const tm = m.match(/^(เด็กชาย|เด็กหญิง|นาย|นางสาว)/);
@@ -2275,9 +2275,9 @@ window.openAdminEditModal = function(activityId, regId) {
     });
     htmlStr += `
       <div class="field">
-        <label>รายชื่อสมาชิก</label>
+        <label>${act.id==='recycle' ? 'รายชื่อผู้ช่วย / สมาชิกเพิ่มเติม' : 'รายชื่อสมาชิก'}</label>
         <div id="adminMemberList">${membersHtml}</div>
-        ${memList.length < act.teamMax ? `<button type="button" class="btn-tiny" id="adminAddMemberBtn" style="margin-top:8px;">+ เพิ่มสมาชิก</button>` : ''}
+        ${memList.length < (act.teamMax || 5) ? `<button type="button" class="btn-tiny" id="adminAddMemberBtn" style="margin-top:8px;">+ เพิ่มสมาชิก</button>` : ''}
       </div>
     `;
   }
@@ -2323,7 +2323,7 @@ window.openAdminEditModal = function(activityId, regId) {
       addMemBtn.onclick = () => {
         const memListDiv = document.getElementById('adminMemberList');
         const count = memListDiv.querySelectorAll('.admin-member-row').length;
-        if(count >= act.teamMax) return;
+        if(count >= (act.teamMax || 5)) return;
         const row = document.createElement('div');
         row.className = 'admin-member-row';
         row.style.cssText = 'display:flex; gap:10px; margin-bottom:8px;';
@@ -2336,7 +2336,7 @@ window.openAdminEditModal = function(activityId, regId) {
           <button type="button" class="btn-tiny danger remove-admin-member">ลบ</button>
         `;
         memListDiv.appendChild(row);
-        if(count+1 >= act.teamMax) addMemBtn.style.display = 'none';
+        if(count+1 >= (act.teamMax || 5)) addMemBtn.style.display = 'none';
         row.querySelector('.remove-admin-member').onclick = () => {
           row.remove();
           addMemBtn.style.display = 'inline-flex';
