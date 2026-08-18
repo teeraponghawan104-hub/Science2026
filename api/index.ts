@@ -192,7 +192,73 @@ app.post("/api/cancel", async (req, res) => {
   }
 });
 
-// Admin Reset Activity
+
+  // Admin Add Registrant
+  app.post("/api/admin/add", async (req, res) => {
+    const { passcode, activityId, data, isTeam } = req.body;
+    if (passcode !== ADMIN_CODE) {
+      return res.status(401).json({ error: "Invalid passcode" });
+    }
+    if (!activityId || !data) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+    try {
+      const docRef = doc(db, "registrations", activityId);
+      const docSnap = await getDoc(docRef);
+      let list = [];
+      if (docSnap.exists()) {
+        list = docSnap.data().list || [];
+      }
+            const newEntry = {
+        ...data,
+        id: activityId.slice(0,3).toUpperCase()+'-'+Date.now().toString(36).toUpperCase(),
+        timestamp: new Date().toISOString()
+      };
+      list.push(newEntry);
+      await setDoc(docRef, { list });
+      res.json({ success: true, entry: newEntry });
+    } catch (error) {
+      console.error("Admin add error:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  // Admin Update Registrant
+  app.post("/api/admin/update", async (req, res) => {
+    const { passcode, activityId, regId, data } = req.body;
+    if (passcode !== ADMIN_CODE) {
+      return res.status(401).json({ error: "Invalid passcode" });
+    }
+    if (!activityId || !regId || !data) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+    try {
+      const docRef = doc(db, "registrations", activityId);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) {
+        return res.status(404).json({ error: "Activity not found" });
+      }
+      let list = docSnap.data().list || [];
+      const index = list.findIndex((r) => r.id === regId);
+      if (index === -1) {
+        return res.status(404).json({ error: "Registration not found" });
+      }
+      
+      const originalEntry = list[index];
+      list[index] = {
+        ...data,
+        id: originalEntry.id,
+        timestamp: originalEntry.timestamp
+      };
+      await setDoc(docRef, { list });
+      res.json({ success: true, entry: list[index] });
+    } catch (error) {
+      console.error("Admin update error:", error);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+  // Admin Reset Activity
 app.post("/api/admin/reset", async (req, res) => {
    const { activityId, passcode } = req.body;
    if (passcode !== ADMIN_CODE) {
