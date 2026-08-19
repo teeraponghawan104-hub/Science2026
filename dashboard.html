@@ -1,0 +1,76 @@
+
+    <div class="admin-pass">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>
+      <h3>สำหรับครู / เจ้าหน้าที่</h3>
+      <p class="modal-sub">กรอกรหัสผ่านเพื่อดูรายชื่อผู้สมัครทั้งหมด</p>
+      <div class="field" style="width:100%;max-width:260px;">
+        <input type="password" id="adminPassInput" placeholder="รหัสผ่าน">
+        <div class="error" id="adminPassErr" style="display:none;">รหัสผ่านไม่ถูกต้อง</div>
+      </div>
+      <button class="btn-submit" id="adminUnlockBtn" style="max-width:260px;">เข้าสู่ระบบ</button>
+    </div>
+  `;
+  document.getElementById('adminUnlockBtn').addEventListener('click', async ()=>{
+    const val = document.getElementById('adminPassInput').value;
+    const btn = document.getElementById('adminUnlockBtn');
+    const err = document.getElementById('adminPassErr');
+    err.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'กำลังตรวจสอบ...';
+    
+    try {
+      const res = await fetch('/api/admin/registrations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode: val, activityId: 'all' })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        adminLists = data.allData;
+        adminUnlocked = true;
+        adminPasscode = val;
+        renderAdminPanel();
+      } else {
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'เข้าสู่ระบบ';
+      }
+    } catch(e) {
+      err.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อ';
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'เข้าสู่ระบบ';
+    }
+  });
+  document.getElementById('adminPassInput').addEventListener('keydown', (e)=>{
+    if(e.key==='Enter') document.getElementById('adminUnlockBtn').click();
+  });
+}
+
+function csvEscape(v){ if(v==null) return ''; const s=String(v).replace(/"/g,'""'); return `"${s}"`; }
+
+
+
+function printRegistrants(actId) {
+  try {
+    const act = ACTIVITIES.find(a=>a.id===actId);
+    if (!act) return;
+    const rawList = adminLists[actId] || [];
+    const list = typeof sortRegistrants === 'function' ? sortRegistrants(rawList, adminSortBy) : rawList;
+    const isTeam = act.mode === 'team' || act.id === 'recycle';
+    
+    let html = `<div class="print-header">รายชื่อผู้สมัคร: ${act.name}<br><span style="font-size:14pt; font-weight:normal; color:#444;">สัปดาห์วันวิทยาศาสตร์ โรงเรียนวรคุณอุปถัมภ์ 20 สิงหาคม 2569</span></div>`;
+    html += `<table><thead><tr>
+      <th class="print-nowrap">รหัส</th>
+      <th>${act.mode==='team' ? 'ชื่อทีม' : 'ชื่อ-สกุล'}</th>
+      <th class="print-nowrap">ระดับชั้น</th>
+      <th class="print-nowrap">ห้อง</th>
+      ${isTeam?'<th style="width:25%">สมาชิก</th>':''}
+      <th class="print-nowrap">โทรศัพท์</th>
+      ${act.extraFields.map(f=>`<th>${f.label}</th>`).join('')}
+      <th class="print-nowrap">เวลาสมัคร</th>
+    </tr></thead><tbody>`;
+    
+    if (list.length === 0) {
+      html += `<tr><td colspan="${6 + act.extraFields.length}" style="text-align:center;">ยังไม่มีผู้สมัครในกิจกรรมนี้</td></tr>

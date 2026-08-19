@@ -1677,12 +1677,15 @@ function printAllAnnouncements() {
         
         list.forEach((r, idx) => {
           let membersStr = '';
-          if (isTeam && Array.isArray(r.members)) membersStr = r.members.join(', ');
+          if (isTeam && Array.isArray(r.members)) {
+             const validMembers = r.members.filter(m => m && m.trim() !== '');
+             membersStr = validMembers.join(', ');
+          }
           
           html += `<tr>
             <td style="text-align:center;">${idx + 1}</td>
             <td class="print-nowrap">${r.id}</td>
-            <td><strong>${isTeam ? (r.teamName || r.fullName) : r.fullName}</strong></td>
+            <td><strong>${isTeam ? (r.teamName || r.fullName || '-') : (r.fullName || r.teamName || '-')}</strong></td>
             <td class="print-nowrap">${r.grade||''}</td>
             <td class="print-nowrap">${r.room||''}</td>
             ${isTeam ? `<td>${membersStr}</td>` : ''}
@@ -1976,8 +1979,20 @@ function renderAdminPanel(){
      }).join('');
 
      // Find most popular
-     let sortedActs = [...ACTIVITIES].map(act => ({...act, count: adminLists[act.id]?.length || 0}));
-     sortedActs.sort((a,b) => b.count - a.count);
+     let sortedActs = [...ACTIVITIES].map(act => {
+        let trueCount = 0;
+        const list = adminLists[act.id] || [];
+        list.forEach(r => {
+           const validMembers = Array.isArray(r.members) ? r.members.filter(m => m && m.trim() !== '').length : 0;
+           if (act.id === 'recycle' || act.mode === 'team') {
+               trueCount += 1 + validMembers;
+           } else {
+               trueCount += 1;
+           }
+        });
+        return {...act, count: list.length, trueCount};
+     });
+     sortedActs.sort((a,b) => b.trueCount - a.trueCount);
      let popularAct = sortedActs[0];
 
      // Calculate room statistics
@@ -1996,7 +2011,8 @@ function renderAdminPanel(){
            }
          }
          const isTeamAct = ['team'].includes(ACTIVITIES.find(a => a.id === actId)?.mode) || actId === 'recycle';
-         const increment = (isTeamAct && Array.isArray(r.members)) ? Math.max(1, r.members.length) : 1;
+         const validMembers = Array.isArray(r.members) ? r.members.filter(m => m && m.trim() !== '').length : 0;
+         const increment = isTeamAct ? 1 + validMembers : 1;
          
          if (!roomStats[fullRoom]) roomStats[fullRoom] = { total: 0, activities: {} };
          roomStats[fullRoom].total += increment;
@@ -2006,14 +2022,40 @@ function renderAdminPanel(){
          }
          roomStats[fullRoom].activities[actId].count += increment;
          
-         if (isTeamAct) {
-           const teamMembers = Array.isArray(r.members) && r.members.length > 0 ? r.members.join(', ') : 'ไม่มีข้อมูลสมาชิก';
-           roomStats[fullRoom].activities[actId].items.push(`ทีม: ${r.teamName || '-'} (${teamMembers})`);
+         if (actId === 'recycle') {
+           const validHelpers = Array.isArray(r.members) ? r.members.filter(m => m && m.trim() !== '') : [];
+           const helpers = validHelpers.length > 0 ? ` (ผู้ช่วย: ${validHelpers.join(', ')})` : '';
+           const mainName = r.fullName || r.teamName || '-';
+           roomStats[fullRoom].activities[actId].items.push(`${mainName}${helpers}`);
+         } else if (isTeamAct) {
+           const validMembers = Array.isArray(r.members) ? r.members.filter(m => m && m.trim() !== '') : [];
+           const teamMembers = validMembers.length > 0 ? ` (${validMembers.join(', ')})` : '';
+           roomStats[fullRoom].activities[actId].items.push(`ทีม: ${r.teamName || r.fullName || '-'}${teamMembers}`);
          } else {
-           roomStats[fullRoom].activities[actId].items.push(r.fullName || '-');
+           roomStats[fullRoom].activities[actId].items.push(r.fullName || r.teamName || '-');
          }
        });
      });
+     
+     // --- ADD LOG AS REQUESTED ---
+     console.group("ตรวจสอบความถูกต้องของยอดรวมตามคำร้องขอ");
+     Object.entries(roomStats).forEach(([room, data]) => {
+         Object.entries(data.activities).forEach(([actId, actData]) => {
+             const actualListLength = (adminLists[actId] || []).filter(r => {
+                 const grade = (r.grade || 'ไม่ระบุ').trim();
+                 const roomNum = (r.room || '-').trim();
+                 let fullRoom = 'ไม่ระบุ';
+                 if (grade !== 'ไม่ระบุ') {
+                   const gNum = grade.replace('ม.', '');
+                   fullRoom = roomNum.includes('/') ? (roomNum.startsWith('ม.') ? roomNum : 'ม.' + roomNum) : 'ม.' + gNum + '/' + roomNum;
+                 }
+                 return fullRoom === room;
+             }).length;
+             console.log(`[Dashboard] ห้อง: ${room} | กิจกรรม: ${actId} => summaryCount (คน): ${actData.count}, actualList.length (รายการ): ${actualListLength}`);
+         });
+     });
+     console.groupEnd();
+
      let roomStatsArr = Object.keys(roomStats).map(room => ({ room, total: roomStats[room].total, activities: roomStats[room].activities }));
      roomStatsArr.sort((a,b) => b.total - a.total);
      let roomCardsHTML = roomStatsArr.length > 0 
@@ -2137,12 +2179,18 @@ function renderAdminPanel(){
           <th style="text-align:center;">จัดการ</th>
         </tr></thead>
         <tbody>
-          ${filteredList.map(r=>`<tr>
+          ${filteredList.map(r=>{
+            let membersStr = '';
+            if (isTeam && Array.isArray(r.members)) {
+              const validMembers = r.members.filter(m => m && m.trim() !== '');
+              membersStr = validMembers.join(', ');
+            }
+            return `<tr>
             <td>${r.id}</td>
-            <td><strong>${isTeam? (r.teamName || r.fullName) : r.fullName}</strong></td>
+            <td><strong>${isTeam ? (r.teamName || r.fullName || '-') : (r.fullName || r.teamName || '-')}</strong></td>
             <td>${r.grade||''}</td>
             <td>${r.room||''}</td>
-            ${isTeam?`<td>${(r.members||[]).join(', ')}</td>`:''}
+            ${isTeam ? `<td>${membersStr}</td>` : ''}
             <td>${r.phone||''}</td>
             ${act.extraFields.map(f=>`<td>${r[f.id]||''}</td>`).join('')}
             <td>${new Date(r.timestamp).toLocaleString('th-TH')}</td>
@@ -2150,7 +2198,7 @@ function renderAdminPanel(){
               <button class="btn-del-item" style="background:var(--primary); margin-right:4px;" onclick="openAdminEditModal('${act.id}', '${r.id}')">แก้ไข</button>
               <button class="btn-del-item" data-del-id="${r.id}">ลบ</button>
             </td>
-          </tr>`).join('')}
+          </tr>`}).join('')}
         </tbody>
       </table>`}
     </div>
